@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+  <entry key="errorNoSuchDevice"><![CDATA[No such device.
+  Received:        {0}
+  Expected one of: {1}
+]]></entry>
+  <entry key="errorALCall"><![CDATA[OpenAL call failed.
+  Function:   {0}
+  Error code: {1}
+]]></entry>
+  <entry key="errorDeviceCreate">Failed to create an audio device.</entry>
+  <entry key="errorDeviceClose">Failed to close an audio device.</entry>
+  <entry key="errorContextCreate"><![CDATA[Failed to create an audio context.
+  Device: {0}
+]]></entry>
+  <entry key="errorClosed"><![CDATA[This object has been closed.
+  Object: {0}
+]]></entry>
+  <entry key="errorBufferDeleteSources"><![CDATA[A buffer cannot be deleted while it is attached to one or more sources.
+  Buffer:  {0}
+  Sources: {1}
+]]></entry>
+  <entry key="errorBufferDataNotDirect"><![CDATA[The data for a buffer must be a direct byte buffer.
+  Buffer: {0}
+]]></entry>
+  <entry key="errorContextNotCurrent"><![CDATA[The context associated with this object is not current.
+  Object:          {0}
+  Object Context:  {1}
+  Current Context: {2}
+]]></entry>
+</properties>
