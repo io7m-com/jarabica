@@ -17,7 +17,7 @@ jobs:
           java-version: 17
       - name: Build
         env:
-          ALSOFT_CONF: .\alsoft.conf
+          ALSOFT_CONF: "$GITHUB_WORKSPACE\alsoft.conf"
           ALSOFT_DRIVERS: wave
           ALSOFT_LOGLEVEL: 3
         run: mvn --errors clean verify site
