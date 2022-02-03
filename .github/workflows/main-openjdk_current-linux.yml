@@ -18,4 +18,5 @@ jobs:
       - name: Build
         env:
           ALSOFT_DRIVERS: wave
+          ALSOFT_LOGLEVEL: 3
         run: mvn --errors clean verify site
