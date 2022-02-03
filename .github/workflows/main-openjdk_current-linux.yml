@@ -16,4 +16,6 @@ jobs:
         with:
           java-version: 17
       - name: Build
+        env:
+          ALSOFT_DRIVERS: wave
         run: mvn --errors clean verify site
