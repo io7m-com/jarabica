@@ -267,6 +267,62 @@ final class JALSource implements JASourceType
     }
   }
 
+  @Override
+  public double gain()
+    throws JAException
+  {
+    this.check();
+
+    final var r = AL10.alGetSourcef(
+      this.sourceHandle,
+      AL10.AL_GAIN
+    );
+    this.errorChecker.checkErrors("alGetSourcef");
+    return (double) r;
+  }
+
+  @Override
+  public void setGain(
+    final double m)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcef(
+      this.sourceHandle,
+      AL10.AL_GAIN,
+      (float) m
+    );
+    this.errorChecker.checkErrors("alSourcef");
+  }
+
+  @Override
+  public double pitch()
+    throws JAException
+  {
+    final var r = AL10.alGetSourcef(
+      this.sourceHandle,
+      AL10.AL_PITCH
+    );
+    this.errorChecker.checkErrors("alGetSourcef");
+    return (double) r;
+  }
+
+  @Override
+  public void setPitch(
+    final double m)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcef(
+      this.sourceHandle,
+      AL10.AL_PITCH,
+      (float) m
+    );
+    this.errorChecker.checkErrors("alSourcef");
+  }
+
   private static JASourceState toSourceState(
     final int x)
   {

@@ -335,6 +335,12 @@ public abstract class JAContract
       Vector3D.of(500.0, 600.0, 700.0),
       source.velocity()
     );
+
+    source.setGain(1.2);
+    assertEquals(1.2, source.gain(), 0.0001);
+
+    source.setPitch(0.5);
+    assertEquals(0.5, source.pitch(), 0.0001);
   }
 
   /**
