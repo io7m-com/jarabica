@@ -16,4 +16,7 @@ jobs:
         with:
           java-version: 17
       - name: Build
-        run: .github\workflows\run-windows.bat
+        env:
+          ALSOFT_DRIVERS: "null"
+          ALSOFT_LOGLEVEL: 3
+        run: mvn --errors clean verify site
