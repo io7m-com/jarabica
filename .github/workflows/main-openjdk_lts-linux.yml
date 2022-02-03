@@ -16,11 +16,7 @@ jobs:
         with:
           java-version: 17
       - name: Build
-        env:
-          ALSOFT_CONF: "$GITHUB_WORKSPACE/alsoft.conf"
-          ALSOFT_DRIVERS: wave
-          ALSOFT_LOGLEVEL: 3
-        run: mvn --errors clean verify site
+        run: .github/workflows/run-linux.sh
       - name: Coverage
         uses: codecov/codecov-action@v1
         with:
