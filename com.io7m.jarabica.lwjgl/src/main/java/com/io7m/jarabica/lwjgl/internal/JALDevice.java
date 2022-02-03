@@ -30,8 +30,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.IntBuffer;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -50,6 +54,7 @@ public final class JALDevice implements JADeviceType
   private final MemoryStack stack;
   private final HashMap<Long, JALContext> contexts;
   private JALContext contextCurrent;
+  private SortedSet<String> extensions;
 
   /**
    * An open device.
@@ -121,6 +126,40 @@ public final class JALDevice implements JADeviceType
     this.check();
 
     return this.contextCreate();
+  }
+
+  @Override
+  public SortedSet<String> extensions()
+    throws JAException
+  {
+    this.check();
+
+    if (this.extensions == null) {
+      final var text =
+        ALC10.alcGetString(this.handle, ALC10.ALC_EXTENSIONS);
+      this.extensions =
+        Collections.unmodifiableSortedSet(
+          new TreeSet<>(List.of(text.split("\s+")))
+        );
+    }
+
+    return this.extensions;
+  }
+
+  @Override
+  public int versionMajor()
+    throws JAException
+  {
+    this.check();
+    return ALC10.alcGetInteger(this.handle, ALC10.ALC_MAJOR_VERSION);
+  }
+
+  @Override
+  public int versionMinor()
+    throws JAException
+  {
+    this.check();
+    return ALC10.alcGetInteger(this.handle, ALC10.ALC_MINOR_VERSION);
   }
 
   private JALContext contextCreate()

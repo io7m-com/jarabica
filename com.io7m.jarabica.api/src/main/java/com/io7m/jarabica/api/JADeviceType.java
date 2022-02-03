@@ -16,6 +16,8 @@
 
 package com.io7m.jarabica.api;
 
+import java.util.SortedSet;
+
 /**
  * A device.
  */
@@ -31,5 +33,32 @@ public interface JADeviceType extends JAHandleType
    */
 
   JAContextType createContext()
+    throws JAException;
+
+  /**
+   * @return The list of supported extension names
+   *
+   * @throws JAException On errors
+   */
+
+  SortedSet<String> extensions()
+    throws JAException;
+
+  /**
+   * @return The OpenAL major version
+   *
+   * @throws JAException On errors
+   */
+
+  int versionMajor()
+    throws JAException;
+
+  /**
+   * @return The OpenAL minor version
+   *
+   * @throws JAException On errors
+   */
+
+  int versionMinor()
     throws JAException;
 }

@@ -21,7 +21,6 @@ import com.io7m.jarabica.api.JADeviceDescription;
 import com.io7m.jarabica.api.JADeviceFactoryType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
-import com.io7m.jarabica.api.JASourceState;
 import com.io7m.jmulticlose.core.CloseableCollection;
 import com.io7m.jmulticlose.core.CloseableCollectionType;
 import com.io7m.jmulticlose.core.ClosingResourceFailedException;
@@ -30,13 +29,16 @@ import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-import static com.io7m.jarabica.api.JABufferFormat.*;
+import static com.io7m.jarabica.api.JABufferFormat.AUDIO_8_BIT_MONO;
+import static com.io7m.jarabica.api.JABufferFormat.values;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_INITIAL;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PAUSED;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_STOPPED;
@@ -48,6 +50,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class JAContract
 {
+  private static final Logger LOG =
+    LoggerFactory.getLogger(JAContract.class);
+
   private JADeviceFactoryType devices;
   private List<JADeviceDescription> deviceDescriptions;
   private CloseableCollectionType<ClosingResourceFailedException> resources;
@@ -105,6 +110,16 @@ public abstract class JAContract
     try (var device =
            this.devices.openDevice(this.deviceDescriptions.get(0))) {
       assertFalse(device.isClosed());
+
+      for (final var e : device.extensions()) {
+        LOG.debug("extension: {}", e);
+      }
+
+      LOG.debug(
+        "version: {}.{}",
+        device.versionMajor(),
+        device.versionMinor()
+      );
     }
   }
 
@@ -142,6 +157,8 @@ public abstract class JAContract
 
       try (var context = device.createContext()) {
         assertTrue(context.isCurrent());
+        LOG.debug("vendor:   {}", context.vendor());
+        LOG.debug("renderer: {}", context.renderer());
       }
     }
   }
@@ -529,7 +546,9 @@ public abstract class JAContract
       this.resources.add(context.createSource());
 
     source.close();
-    assertThrows(JAMisuseException.class, () -> source.setVelocity(0.0, 0.0, 0.0));
+    assertThrows(
+      JAMisuseException.class,
+      () -> source.setVelocity(0.0, 0.0, 0.0));
   }
 
   /**

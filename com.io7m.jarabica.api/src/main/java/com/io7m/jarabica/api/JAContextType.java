@@ -71,4 +71,23 @@ public interface JAContextType extends JAHandleType
 
   JABufferType createBuffer()
     throws JAException;
+
+  /**
+   * @return The OpenAL vendor
+   *
+   * @throws JAException On errors
+   */
+
+  String vendor()
+    throws JAException;
+
+  /**
+   * @return The OpenAL renderer
+   *
+   * @throws JAException On errors
+   */
+
+  String renderer()
+    throws JAException;
+
 }

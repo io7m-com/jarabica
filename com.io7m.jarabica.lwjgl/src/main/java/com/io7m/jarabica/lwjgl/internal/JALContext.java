@@ -135,7 +135,7 @@ final class JALContext implements JAContextType
   public JAListenerType listener()
     throws JAException
   {
-    this.checkNotClosed();
+    this.check();
     return this.listener;
   }
 
@@ -143,7 +143,7 @@ final class JALContext implements JAContextType
   public JASourceType createSource()
     throws JAException
   {
-    this.checkNotClosed();
+    this.check();
 
     final var sourceHandle = AL10.alGenSources();
     this.errorChecker.checkErrors("alGenSources");
@@ -168,7 +168,7 @@ final class JALContext implements JAContextType
   public JABufferType createBuffer()
     throws JAException
   {
-    this.checkNotClosed();
+    this.check();
 
     final var bufferHandle = AL10.alGenBuffers();
     this.errorChecker.checkErrors("alGenBuffers");
@@ -187,6 +187,33 @@ final class JALContext implements JAContextType
     }
 
     return buffer;
+  }
+
+  @Override
+  public String vendor()
+    throws JAException
+  {
+    this.check();
+    final var text = AL10.alGetString(AL10.AL_VENDOR);
+    this.errorChecker.checkErrors("alGetString");
+    return text;
+  }
+
+  @Override
+  public String renderer()
+    throws JAException
+  {
+    this.check();
+    final var text = AL10.alGetString(AL10.AL_RENDERER);
+    this.errorChecker.checkErrors("alGetString");
+    return text;
+  }
+
+  private void check()
+    throws JAException
+  {
+    this.checkNotClosed();
+    this.checkCurrent(this, this);
   }
 
   private void checkNotClosed()
