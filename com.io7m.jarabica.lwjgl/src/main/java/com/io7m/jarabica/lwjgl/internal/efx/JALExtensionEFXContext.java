@@ -16,6 +16,7 @@
 
 package com.io7m.jarabica.lwjgl.internal.efx;
 
+import com.io7m.jarabica.api.JACallException;
 import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JASourceType;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoParameters;
@@ -194,7 +195,7 @@ public final class JALExtensionEFXContext extends JALExtension implements
 
     this.context.check();
 
-    final JAEFXSourceNode sourceNode =
+    final var sourceNode =
       new JAEFXSourceNode(source);
 
     this.signalGraph.addVertex(sourceNode);
@@ -266,7 +267,27 @@ public final class JALExtensionEFXContext extends JALExtension implements
     throws JAException
   {
     Objects.requireNonNull(source, "source");
-    return this.filterSourceDetachDirect(new JAEFXSourceNode(source));
+
+    final var sourceNode = new JAEFXSourceNode(source);
+    this.context.check();
+
+    final var edges =
+      this.signalGraph.outgoingEdgesOf(sourceNode);
+
+    for (final var edge : edges) {
+      if (edge instanceof JAEFXSourceDirectToFilter edgeFilter) {
+        final var filter = edgeFilter.filter();
+        AL10.alSourcei(
+          (int) sourceNode.source().handle(),
+          AL_DIRECT_FILTER,
+          AL_FILTER_NULL);
+        this.errorChecker.checkErrors("alSourcei");
+        this.signalGraph.removeEdge(sourceNode, filter);
+        return Optional.of(filter);
+      }
+    }
+
+    return Optional.empty();
   }
 
   @Override
@@ -336,33 +357,6 @@ public final class JALExtensionEFXContext extends JALExtension implements
     return this.signalGraphRead;
   }
 
-  private Optional<JAEFXFilterType<?>> filterSourceDetachDirect(
-    final JAEFXSourceNode source)
-    throws JAException
-  {
-    Objects.requireNonNull(source, "source");
-
-    this.context.check();
-
-    final var edges =
-      this.signalGraph.outgoingEdgesOf(source);
-
-    for (final var edge : edges) {
-      if (edge instanceof JAEFXSourceDirectToFilter edgeFilter) {
-        final var filter = edgeFilter.filter();
-        AL10.alSourcei(
-          (int) source.source().handle(),
-          AL_DIRECT_FILTER,
-          AL_FILTER_NULL);
-        this.errorChecker.checkErrors("alSourcei");
-        this.signalGraph.removeEdge(source, filter);
-        return Optional.of(filter);
-      }
-    }
-
-    return Optional.empty();
-  }
-
   void filterParametersUpdated(
     final JAEFXFilterType<?> filter)
     throws JAException
@@ -380,9 +374,19 @@ public final class JALExtensionEFXContext extends JALExtension implements
   }
 
   void effectParametersUpdated(
-    final JALEFXEffect effect)
+    final JAEFXEffectType<?> effect)
+    throws JACallException
   {
-
+    for (final var edge : this.signalGraph.incomingEdgesOf(effect)) {
+      if (edge instanceof JAEFXEffectOnSlot onSlot) {
+        alAuxiliaryEffectSloti(
+          (int) onSlot.slot().handle(),
+          AL_EFFECTSLOT_EFFECT,
+          (int) effect.handle()
+        );
+        this.errorChecker.checkErrors("alAuxiliaryEffectSloti");
+      }
+    }
   }
 
   void effectsSlotDeleted(

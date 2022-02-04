@@ -25,8 +25,6 @@ import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterHighPassParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterLowPassParameters;
-import com.io7m.jarabica.extensions.efx.JAEFXGraphEdgeType;
-import com.io7m.jarabica.extensions.efx.JAEFXGraphNodeType;
 import com.io7m.jarabica.extensions.efx.JAEFXSourceNode;
 import com.io7m.jarabica.extensions.efx.JAEFXType;
 import com.io7m.jmulticlose.core.CloseableCollection;
@@ -34,7 +32,6 @@ import com.io7m.jmulticlose.core.CloseableCollectionType;
 import com.io7m.jmulticlose.core.ClosingResourceFailedException;
 import com.io7m.jtensors.core.parameterized.vectors.PVector3D;
 import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
-import org.jgrapht.Graph;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -848,12 +845,62 @@ public abstract class JAContract
     assertTrue(graph.containsEdge(new JAEFXSourceNode(source0), filter));
     assertTrue(graph.containsEdge(new JAEFXSourceNode(source1), filter));
 
+    filter.setParameters(parameters);
     filter.close();
     assertTrue(graph.containsVertex(new JAEFXSourceNode(source0)));
     assertTrue(graph.containsVertex(new JAEFXSourceNode(source1)));
     assertFalse(graph.containsVertex(filter));
     assertFalse(graph.containsEdge(new JAEFXSourceNode(source0), filter));
     assertFalse(graph.containsEdge(new JAEFXSourceNode(source1), filter));
+  }
+
+  /**
+   * Connecting a source to a filter and then detaching the filter works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFiltersSourceDirectDetach()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var parameters =
+      new JAEFXFilterLowPassParameters(1.0, 1.0);
+    final var filter =
+      this.resources.add(efx.createFilterLowPass(parameters));
+
+    efx.attachSourceDirectOutputToFilter(source, filter);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), filter));
+
+    final var old0 =
+      efx.detachSourceDirectOutputFromFilter(source);
+    assertEquals(Optional.of(filter), old0);
+
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source), filter));
+
+    final var old1 =
+      efx.detachSourceDirectOutputFromFilter(source);
+    assertEquals(Optional.empty(), old1);
   }
 
   /**
@@ -948,5 +995,165 @@ public abstract class JAContract
     assertFalse(graph.containsVertex(new JAEFXSourceNode(source)));
     assertTrue(graph.containsVertex(filter));
     assertFalse(graph.containsEdge(new JAEFXSourceNode(source), filter));
+  }
+
+  /**
+   * Connecting a source to an effects slot works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffectsSlot0()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var effect0 =
+      this.resources.add(efx.createEffectEcho(new JAEFXEffectEchoParameters(
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.0
+      )));
+
+    final var slot0 = efx.createEffectsSlot();
+
+    assertTrue(graph.containsVertex(effect0));
+    assertTrue(graph.containsVertex(slot0));
+
+    efx.attachSourceDirectToEffectsSlot(source, slot0);
+    efx.attachEffectToEffectsSlot(effect0, slot0);
+
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), slot0));
+    assertTrue(graph.containsEdge(slot0, effect0));
+  }
+
+  /**
+   * Changing effects on an effects slot works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffectsSlotReattaches()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var effect0 =
+      this.resources.add(efx.createEffectEcho(new JAEFXEffectEchoParameters(
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.0
+      )));
+
+    final var effect1 =
+      this.resources.add(efx.createEffectEcho(new JAEFXEffectEchoParameters(
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.0
+      )));
+
+    final var slot0 = efx.createEffectsSlot();
+
+    assertTrue(graph.containsVertex(effect0));
+    assertTrue(graph.containsVertex(effect1));
+    assertTrue(graph.containsVertex(slot0));
+
+    efx.attachSourceDirectToEffectsSlot(source, slot0);
+
+    efx.attachEffectToEffectsSlot(effect0, slot0);
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), slot0));
+    assertTrue(graph.containsEdge(slot0, effect0));
+
+    efx.attachEffectToEffectsSlot(effect1, slot0);
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), slot0));
+    assertTrue(graph.containsEdge(slot0, effect1));
+
+    efx.attachEffectToEffectsSlot(effect1, slot0);
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), slot0));
+    assertTrue(graph.containsEdge(slot0, effect1));
+  }
+
+  /**
+   * Connecting a source to an effects slot and then deleting the slot works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffectsSlotDelete()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var effect0 =
+      this.resources.add(efx.createEffectEcho(new JAEFXEffectEchoParameters(
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.0
+      )));
+
+    final var slot0 = efx.createEffectsSlot();
+    assertTrue(graph.containsVertex(effect0));
+    assertTrue(graph.containsVertex(slot0));
+
+    efx.attachSourceDirectToEffectsSlot(source, slot0);
+    slot0.close();
+
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertFalse(graph.containsVertex(slot0));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source), slot0));
+    assertFalse(graph.containsEdge(slot0, effect0));
   }
 }

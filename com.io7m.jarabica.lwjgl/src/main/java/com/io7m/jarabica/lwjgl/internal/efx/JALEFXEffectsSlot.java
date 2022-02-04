@@ -18,12 +18,22 @@
 package com.io7m.jarabica.lwjgl.internal.efx;
 
 import com.io7m.jarabica.api.JAException;
+import com.io7m.jarabica.extensions.efx.JAEFXGraphEdgeType.JAEFXEffectOnSlot;
+import com.io7m.jarabica.extensions.efx.JAEFXGraphEdgeType.JAEFXSourceDirectToEffectsSlot;
 import com.io7m.jarabica.extensions.efx.JAEXFEffectsSlotType;
 import com.io7m.jarabica.lwjgl.internal.JALErrorChecker;
 import com.io7m.jarabica.lwjgl.internal.JALHandle;
-import org.lwjgl.openal.EXTEfx;
+import org.lwjgl.openal.AL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
+
+import static org.lwjgl.openal.EXTEfx.AL_AUXILIARY_SEND_FILTER;
+import static org.lwjgl.openal.EXTEfx.AL_EFFECTSLOT_EFFECT;
+import static org.lwjgl.openal.EXTEfx.AL_EFFECT_NULL;
+import static org.lwjgl.openal.EXTEfx.alAuxiliaryEffectSloti;
+import static org.lwjgl.openal.EXTEfx.alDeleteAuxiliaryEffectSlots;
 
 /**
  * An effects slot.
@@ -44,7 +54,7 @@ public final class JALEFXEffectsSlot
    * An effects slot.
    *
    * @param inContext The context
-   * @param slot    The slot
+   * @param slot      The slot
    */
 
   public JALEFXEffectsSlot(
@@ -67,7 +77,30 @@ public final class JALEFXEffectsSlot
   protected void closeActual()
     throws JAException
   {
-    EXTEfx.alDeleteAuxiliaryEffectSlots(this.handle);
+    final var edges =
+      Set.copyOf(this.context.signalGraph().incomingEdgesOf(this));
+
+    for (final var edge : edges) {
+      if (edge instanceof JAEFXEffectOnSlot) {
+        alAuxiliaryEffectSloti(
+          this.handle,
+          AL_EFFECTSLOT_EFFECT,
+          AL_EFFECT_NULL);
+        this.errors.checkErrors("alAuxiliaryEffectSloti");
+      }
+      if (edge instanceof JAEFXSourceDirectToEffectsSlot slot) {
+        AL11.alSource3i(
+          (int) slot.source().source().handle(),
+          AL_AUXILIARY_SEND_FILTER,
+          0,
+          0,
+          0
+        );
+        this.errors.checkErrors("alSource3i");
+      }
+    }
+
+    alDeleteAuxiliaryEffectSlots(this.handle);
     this.errors.checkErrors("alDeleteAuxiliaryEffectSlots");
     this.context.effectsSlotDeleted(this);
   }
