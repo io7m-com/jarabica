@@ -23,6 +23,12 @@ package com.io7m.jarabica.api;
 public interface JAHandleType extends AutoCloseable
 {
   /**
+   * @return The underlying resource handle
+   */
+
+  long handle();
+
+  /**
    * Destroy the object.
    *
    * @throws JAException On errors

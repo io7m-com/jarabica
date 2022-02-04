@@ -28,8 +28,9 @@ module com.io7m.jarabica.lwjgl
   requires static org.osgi.annotation.bundle;
   requires static org.osgi.annotation.versioning;
 
-  requires org.lwjgl.openal;
   requires com.io7m.jxtrand.vanilla;
+  requires org.jgrapht.core;
+  requires org.lwjgl.openal;
   requires org.slf4j;
 
   requires transitive com.io7m.jarabica.api;

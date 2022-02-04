@@ -16,35 +16,20 @@
 
 package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+import com.io7m.jarabica.api.JARange;
 
 /**
- * The type of EFX effects.
+ * High-pass filter parameters.
  *
- * @param <P> The type of parameter values
+ * @param gain      The filter gain
+ * @param frequency The filter frequency
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public record JAEFXFilterHighPassParameters(
+  @JARange(lower = 0.0, upper = 1.0)
+  double gain,
+  @JARange(lower = 0.0, upper = 1.0)
+  double frequency)
 {
-  /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
-   */
 
-  P parameters()
-    throws JAException;
-
-  /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
-   */
-
-  void setParameters(P parameters)
-    throws JAException;
 }

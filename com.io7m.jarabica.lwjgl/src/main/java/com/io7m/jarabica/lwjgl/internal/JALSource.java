@@ -35,7 +35,11 @@ import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PAUSED;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PLAYING;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_STOPPED;
 
-final class JALSource extends JALHandle implements JASourceType
+/**
+ * A source.
+ */
+
+public final class JALSource extends JALHandle implements JASourceType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALSource.class);
@@ -45,7 +49,6 @@ final class JALSource extends JALHandle implements JASourceType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int sourceHandle;
-  private JALBuffer currentBuffer;
 
   JALSource(
     final JALContext inContext,
@@ -91,6 +94,7 @@ final class JALSource extends JALHandle implements JASourceType
   {
     AL10.alDeleteSources(this.sourceHandle);
     this.errorChecker.checkErrors("alDeleteSources");
+    this.context.onSourceDeleted(this);
   }
 
   @Override
@@ -233,10 +237,9 @@ final class JALSource extends JALHandle implements JASourceType
     final var jalBuffer = (JALBuffer) buffer;
     jalBuffer.check();
 
-    AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, jalBuffer.handle());
+    AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, (int) jalBuffer.handle());
     this.errorChecker.checkErrors("alSourcei");
-    jalBuffer.addSource(this);
-    this.currentBuffer = jalBuffer;
+    this.context.onSourceSetBuffer(this, jalBuffer);
   }
 
   @Override
@@ -247,14 +250,13 @@ final class JALSource extends JALHandle implements JASourceType
 
     AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, AL10.AL_NONE);
     this.errorChecker.checkErrors("alSourcei");
-    this.currentBuffer.removeSource(this);
-    this.currentBuffer = null;
+    this.context.onSourceUnsetBuffer(this);
   }
 
   @Override
   public Optional<JABufferType> buffer()
   {
-    return Optional.ofNullable(this.currentBuffer);
+    return this.context.onSourceWantBuffer(this);
   }
 
   @Override

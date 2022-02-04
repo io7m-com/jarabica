@@ -52,6 +52,12 @@ public abstract class JALHandle implements JAHandleType
   }
 
   @Override
+  public final long handle()
+  {
+    return this.handleValue.longValue();
+  }
+
+  @Override
   public final void close()
     throws JAException
   {

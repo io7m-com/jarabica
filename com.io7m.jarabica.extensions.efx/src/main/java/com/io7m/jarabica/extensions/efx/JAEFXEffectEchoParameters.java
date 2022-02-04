@@ -16,35 +16,29 @@
 
 package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+import com.io7m.jarabica.api.JARange;
 
 /**
- * The type of EFX effects.
+ * Echo effect parameters.
  *
- * @param <P> The type of parameter values
+ * @param delay    The delay in seconds
+ * @param delayLR  The L/R delay in seconds
+ * @param damping  The damping amount
+ * @param feedback The feedback amount
+ * @param spread   The spread amount
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public record JAEFXEffectEchoParameters(
+  @JARange(lower = 0.0, upper = 0.207)
+  double delay,
+  @JARange(lower = 0.0, upper = 0.404)
+  double delayLR,
+  @JARange(lower = 0.0, upper = 0.99)
+  double damping,
+  @JARange(lower = 0.0, upper = 1.0)
+  double feedback,
+  @JARange(lower = -1.0, upper = 1.0)
+  double spread)
 {
-  /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
-   */
 
-  P parameters()
-    throws JAException;
-
-  /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
-   */
-
-  void setParameters(P parameters)
-    throws JAException;
 }

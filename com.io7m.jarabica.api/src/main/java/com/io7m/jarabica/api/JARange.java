@@ -14,37 +14,23 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.extensions.efx;
-
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+package com.io7m.jarabica.api;
 
 /**
- * The type of EFX effects.
- *
- * @param <P> The type of parameter values
+ * An annotation that indicates the valid range of a parameter.
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public @interface JARange
 {
   /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
+   * @return The lower bound, inclusive
    */
 
-  P parameters()
-    throws JAException;
+  double lower();
 
   /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
+   * @return The upper bound, inclusive
    */
 
-  void setParameters(P parameters)
-    throws JAException;
+  double upper();
 }

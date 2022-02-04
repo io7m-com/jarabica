@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 final class JALBuffer extends JALHandle implements JABufferType
 {
@@ -40,7 +40,6 @@ final class JALBuffer extends JALHandle implements JABufferType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int bufferHandle;
-  private final HashSet<JALSource> attachedSources;
 
   JALBuffer(
     final JALContext inContext,
@@ -60,8 +59,6 @@ final class JALBuffer extends JALHandle implements JABufferType
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.bufferHandle = inSourceHandle;
-    this.attachedSources =
-      new HashSet<>();
   }
 
   private static int alFormatOf(
@@ -85,15 +82,23 @@ final class JALBuffer extends JALHandle implements JABufferType
   protected void closeActual()
     throws JAException
   {
-    if (this.attachedSources.isEmpty()) {
-      AL10.alDeleteBuffers(this.bufferHandle);
-      this.errorChecker.checkErrors("alDeleteBuffers");
-    } else {
+    final var sourcesUsingBuffer =
+      this.context.sourcesUsingBuffer(this);
+
+    if (!sourcesUsingBuffer.isEmpty()) {
       throw new JAMisuseException(
         this.strings.format(
-          "errorBufferDeleteSources", this, this.attachedSources)
+          "errorBufferDeleteSources",
+          this,
+          sourcesUsingBuffer.stream()
+            .map(JALSourceBufferLink::source)
+            .collect(Collectors.toList()))
       );
     }
+
+    AL10.alDeleteBuffers(this.bufferHandle);
+    this.errorChecker.checkErrors("alDeleteBuffers");
+    this.context.onBufferDeleted(this);
   }
 
   @Override
@@ -140,22 +145,5 @@ final class JALBuffer extends JALHandle implements JABufferType
       frequency
     );
     this.errorChecker.checkErrors("alBufferData");
-  }
-
-  int handle()
-  {
-    return this.bufferHandle;
-  }
-
-  void addSource(
-    final JALSource source)
-  {
-    this.attachedSources.add(source);
-  }
-
-  void removeSource(
-    final JALSource source)
-  {
-    this.attachedSources.remove(source);
   }
 }

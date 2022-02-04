@@ -14,37 +14,18 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+
 package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
-
 /**
- * The type of EFX effects.
- *
- * @param <P> The type of parameter values
+ * A node in the signal graph.
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public sealed interface JAEFXGraphNodeType
+  permits JAEFXSourceNode,
+  JAEFXFilterType,
+  JAEXFEffectsSlotType,
+  JAEFXEffectType
 {
-  /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
-   */
 
-  P parameters()
-    throws JAException;
-
-  /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
-   */
-
-  void setParameters(P parameters)
-    throws JAException;
 }

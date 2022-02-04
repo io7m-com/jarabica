@@ -24,6 +24,7 @@ import com.io7m.jarabica.api.JAExtensionContextType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.api.JASourceType;
+import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
 import org.lwjgl.openal.ALCCapabilities;
@@ -32,8 +33,10 @@ import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * The basic context type.
@@ -53,6 +56,8 @@ public final class JALContext extends JALHandle implements JAContextType
   private final ALCapabilities alCapabilities;
   private final JALListener listener;
   private final JALExtensionRegistry extensions;
+  private final HashSet<JALExtension> extensionsCreated;
+  private final DirectedAcyclicGraph<JALHandle, JALSourceBufferLink> sourcesToBuffers;
 
   JALContext(
     final JALDevice inDevice,
@@ -82,8 +87,19 @@ public final class JALContext extends JALHandle implements JAContextType
       Objects.requireNonNull(inAlCapabilities, "alCapabilities");
     this.extensions =
       Objects.requireNonNull(inExtensions, "extensions");
+    this.extensionsCreated =
+      new HashSet<JALExtension>();
+    this.sourcesToBuffers =
+      new DirectedAcyclicGraph<>(JALSourceBufferLink.class);
+
     this.listener =
       new JALListener(this, this.stack, this.strings, this.errorChecker);
+  }
+
+  Set<JALSourceBufferLink> sourcesUsingBuffer(
+    final JALBuffer buffer)
+  {
+    return this.sourcesToBuffers.incomingEdgesOf(buffer);
   }
 
   @Override
@@ -119,7 +135,15 @@ public final class JALContext extends JALHandle implements JAContextType
     throws JAException
   {
     this.checkNotClosed();
-    return this.extensions.extension(this, clazz);
+
+    final var ext =
+      this.extensions.extension(this, clazz);
+    ext.ifPresent(actual -> {
+      if (actual instanceof JALExtension e) {
+        this.extensionsCreated.add(e);
+      }
+    });
+    return ext;
   }
 
   @Override
@@ -172,6 +196,7 @@ public final class JALContext extends JALHandle implements JAContextType
       LOG.trace("created source: {}", source);
     }
 
+    this.sourcesToBuffers.addVertex(source);
     return source;
   }
 
@@ -197,6 +222,7 @@ public final class JALContext extends JALHandle implements JAContextType
       LOG.trace("created buffer: {}", buffer);
     }
 
+    this.sourcesToBuffers.addVertex(buffer);
     return buffer;
   }
 
@@ -259,11 +285,6 @@ public final class JALContext extends JALHandle implements JAContextType
     }
   }
 
-  long handle()
-  {
-    return this.contextHandle;
-  }
-
   /**
    * @return The handle to the underlying device
    */
@@ -289,5 +310,62 @@ public final class JALContext extends JALHandle implements JAContextType
   public JALStrings strings()
   {
     return this.strings;
+  }
+
+  void onSourceDeleted(
+    final JALSource source)
+  {
+    for (final var e : this.extensionsCreated) {
+      e.onSourceDeleted(source);
+    }
+    this.sourcesToBuffers.removeVertex(source);
+  }
+
+  void onSourceSetBuffer(
+    final JALSource source,
+    final JALBuffer buffer)
+  {
+    this.onSourceUnsetBuffer(source);
+
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("source set buffer: {} -> {}", source, buffer);
+    }
+
+    this.sourcesToBuffers.addEdge(
+      source,
+      buffer,
+      new JALSourceBufferLink(source, buffer));
+  }
+
+  void onSourceUnsetBuffer(
+    final JALSource source)
+  {
+    final var edges =
+      Set.copyOf(this.sourcesToBuffers.outgoingEdgesOf(source));
+
+    for (final var edge : edges) {
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("source unset buffer: {} -> {}", source, edge.buffer());
+      }
+      this.sourcesToBuffers.removeEdge(edge);
+    }
+  }
+
+  Optional<JABufferType> onSourceWantBuffer(
+    final JALSource source)
+  {
+    final var edges =
+      this.sourcesToBuffers.outgoingEdgesOf(source);
+
+    for (final var edge : edges) {
+      return Optional.of(edge.buffer());
+    }
+    return Optional.empty();
+  }
+
+  void onBufferDeleted(
+    final JALBuffer buffer)
+  {
+    this.sourcesToBuffers.removeVertex(buffer);
   }
 }

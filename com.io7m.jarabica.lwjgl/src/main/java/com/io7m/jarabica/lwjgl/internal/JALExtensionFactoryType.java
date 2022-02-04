@@ -17,6 +17,7 @@
 
 package com.io7m.jarabica.lwjgl.internal;
 
+import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAExtensionType;
 
 import java.util.SortedSet;
@@ -59,5 +60,6 @@ public interface JALExtensionFactoryType
    * @return A new extension instance
    */
 
-  JAExtensionType create(JALContext context);
+  JAExtensionType create(JALContext context)
+    throws JAException;
 }

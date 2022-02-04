@@ -17,6 +17,7 @@
 
 package com.io7m.jarabica.lwjgl.internal.efx;
 
+import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAExtensionType;
 import com.io7m.jarabica.extensions.efx.JAEFXType;
 import com.io7m.jarabica.lwjgl.internal.JALContext;
@@ -52,7 +53,10 @@ public final class JALExtensionEFX implements JALExtensionFactoryType
   @Override
   public JAExtensionType create(
     final JALContext context)
+    throws JAException
   {
+    context.check();
+
     return new JALExtensionEFXContext(
       context,
       context.errorChecker(),

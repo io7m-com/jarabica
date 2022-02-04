@@ -246,9 +246,4 @@ public final class JALDevice extends JALHandle implements JADeviceType
       }
     }
   }
-
-  long handle()
-  {
-    return this.handle;
-  }
 }

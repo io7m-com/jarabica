@@ -23,25 +23,27 @@ import com.io7m.jarabica.lwjgl.internal.JALHandle;
 
 import java.util.Objects;
 
-import static org.lwjgl.openal.EXTEfx.alDeleteEffects;
+import static org.lwjgl.openal.EXTEfx.alDeleteFilters;
 
 /**
- * The base type of effects.
+ * The base type of filters.
  */
 
-public abstract class JALEFXEffect extends JALHandle
+public abstract class JALEFXFilter extends JALHandle
 {
   private final JALExtensionEFXContext context;
-  private final int effect;
+  private final int filter;
+  private final JALErrorChecker errorChecker;
 
-  protected JALEFXEffect(
+  protected JALEFXFilter(
     final JALExtensionEFXContext inContext,
     final String inType,
     final Number inValue)
   {
     super(inType, inValue, inContext.context().strings());
-    this.effect = inValue.intValue();
+    this.filter = inValue.intValue();
     this.context = Objects.requireNonNull(inContext, "context");
+    this.errorChecker = this.context.context().errorChecker();
   }
 
   /**
@@ -55,15 +57,15 @@ public abstract class JALEFXEffect extends JALHandle
 
   protected final JALErrorChecker errorChecker()
   {
-    return this.context.context().errorChecker();
+    return this.errorChecker;
   }
 
   @Override
   protected final void closeActual()
     throws JAException
   {
-    alDeleteEffects(this.effect);
-    this.context.context().errorChecker().checkErrors("alDeleteEffects");
+    alDeleteFilters(this.filter);
+    this.context.context().errorChecker().checkErrors("alDeleteFilters");
     this.onDeleted();
   }
 
@@ -73,6 +75,7 @@ public abstract class JALEFXEffect extends JALHandle
     throws JAException
   {
     this.checkNotClosed();
-    this.context.context().checkCurrent(this, this.context.context());
+    final var c = this.context.context();
+    c.checkCurrent(this, c);
   }
 }

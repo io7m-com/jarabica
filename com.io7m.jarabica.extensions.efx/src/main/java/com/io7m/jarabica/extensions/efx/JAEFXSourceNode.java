@@ -16,35 +16,36 @@
 
 package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+import com.io7m.jarabica.api.JASourceType;
+
+import java.util.Objects;
 
 /**
- * The type of EFX effects.
+ * A source node in the signal graph.
  *
- * @param <P> The type of parameter values
+ * @param source The source
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public record JAEFXSourceNode(
+  JASourceType source)
+  implements JAEFXGraphNodeType
 {
   /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
+   * A source node in the signal graph.
    */
 
-  P parameters()
-    throws JAException;
+  public JAEFXSourceNode
+  {
+    Objects.requireNonNull(source, "source");
+  }
 
-  /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
-   */
-
-  void setParameters(P parameters)
-    throws JAException;
+  @Override
+  public String toString()
+  {
+    return new StringBuilder(64)
+      .append("[JAEFXSourceNode ")
+      .append(this.source)
+      .append("]")
+      .toString();
+  }
 }

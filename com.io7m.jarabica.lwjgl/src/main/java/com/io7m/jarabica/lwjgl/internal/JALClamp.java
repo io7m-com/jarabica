@@ -14,37 +14,33 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+package com.io7m.jarabica.lwjgl.internal;
 
 /**
- * The type of EFX effects.
- *
- * @param <P> The type of parameter values
+ * Functions to clamp values.
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public final class JALClamp
 {
-  /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
-   */
+  private JALClamp()
+  {
 
-  P parameters()
-    throws JAException;
+  }
 
   /**
-   * Set the effect parameters.
+   * @param x     The value
+   * @param lower The inclusive lower bound
+   * @param upper The inclusive upper bound
    *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
+   * @return {@code Math.max(Math.min(x, upper), lower);}
    */
 
-  void setParameters(P parameters)
-    throws JAException;
+  public static double clamp(
+    final double x,
+    final double lower,
+    final double upper)
+  {
+    return Math.max(Math.min(x, upper), lower);
+  }
 }

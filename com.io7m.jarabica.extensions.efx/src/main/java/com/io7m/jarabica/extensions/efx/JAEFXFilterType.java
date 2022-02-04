@@ -20,16 +20,17 @@ import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAHandleType;
 
 /**
- * The type of EFX effects.
+ * The type of EFX filters.
  *
  * @param <P> The type of parameter values
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public sealed interface JAEFXFilterType<P>
+  extends JAHandleType, JAEFXGraphNodeType
+  permits JAEFXFilterHighPassType, JAEFXFilterLowPassType
 {
   /**
-   * @return The current effect parameters
+   * @return The current filter parameters
    *
    * @throws JAException On errors
    */
@@ -38,7 +39,7 @@ public sealed interface JAEFXEffectType<P>
     throws JAException;
 
   /**
-   * Set the effect parameters.
+   * Set the filter parameters.
    *
    * @param parameters The new parameters
    *

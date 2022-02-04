@@ -22,12 +22,19 @@ import com.io7m.jarabica.api.JADeviceFactoryType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXFilterHighPassParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXFilterLowPassParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXGraphEdgeType;
+import com.io7m.jarabica.extensions.efx.JAEFXGraphNodeType;
+import com.io7m.jarabica.extensions.efx.JAEFXSourceNode;
 import com.io7m.jarabica.extensions.efx.JAEFXType;
 import com.io7m.jmulticlose.core.CloseableCollection;
 import com.io7m.jmulticlose.core.CloseableCollectionType;
 import com.io7m.jmulticlose.core.ClosingResourceFailedException;
 import com.io7m.jtensors.core.parameterized.vectors.PVector3D;
 import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
+import org.jgrapht.Graph;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -315,6 +322,7 @@ public abstract class JAContract
 
     assertFalse(source.isClosed());
     assertFalse(source.isPlaying());
+    assertEquals(Optional.empty(), source.buffer());
 
     source.setPosition(10.0, 20.0, 30.0);
     assertEquals(
@@ -691,11 +699,11 @@ public abstract class JAContract
         List.of(new JAEFXConfiguration(8))
       ));
 
-    final var extension =
+    final var efx =
       context.extension(JAEFXType.class)
         .orElseThrow();
 
-    LOG.debug("max aux sends: {}", extension.maxAuxiliarySends());
+    LOG.debug("max aux sends: {}", efx.maxAuxiliarySends());
   }
 
   /**
@@ -716,22 +724,229 @@ public abstract class JAContract
     final var context =
       this.resources.add(device.createContext());
 
-    final var extension =
+    final var efx =
       context.extension(JAEFXType.class)
         .orElseThrow();
 
-    final var effect =
-      this.resources.add(extension.createEffectEcho());
+    final var parameters =
+      new JAEFXEffectEchoParameters(
+        0.05,
+        0.06,
+        0.3,
+        0.25,
+        0.1
+      );
 
-    effect.setDelay(0.05);
-    assertEquals(0.05, effect.delay(), 0.0001);
-    effect.setDelayLR(0.06);
-    assertEquals(0.06, effect.delayLR(), 0.0001);
-    effect.setFeedback(0.25);
-    assertEquals(0.25, effect.feedback(), 0.0001);
-    effect.setDamping(0.3);
-    assertEquals(0.3, effect.damping(), 0.0001);
-    effect.setSpread(0.1);
-    assertEquals(0.1, effect.spread(), 0.0001);
+    final var effect =
+      this.resources.add(efx.createEffectEcho(parameters));
+
+    assertEquals(parameters, effect.parameters());
+  }
+
+  /**
+   * Creating filters works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFilters0()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var parameters =
+      new JAEFXFilterLowPassParameters(1.0, 1.0);
+    final var effect =
+      this.resources.add(efx.createFilterLowPass(parameters));
+
+    assertEquals(parameters, effect.parameters());
+  }
+
+  /**
+   * Creating filters works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFilters1()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var parameters =
+      new JAEFXFilterHighPassParameters(1.0, 1.0);
+    final var effect =
+      this.resources.add(efx.createFilterHighPass(parameters));
+
+    assertEquals(parameters, effect.parameters());
+  }
+
+  /**
+   * Connecting a source to a filter and then deleting the filter works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFiltersSourceDirectClose()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source0 =
+      this.resources.add(context.createSource());
+    final var source1 =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var parameters =
+      new JAEFXFilterLowPassParameters(1.0, 1.0);
+    final var filter =
+      this.resources.add(efx.createFilterLowPass(parameters));
+
+    efx.attachSourceDirectOutputToFilter(source0, filter);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source0)));
+    assertTrue(graph.containsVertex(filter));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source0), filter));
+
+    efx.attachSourceDirectOutputToFilter(source1, filter);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source0)));
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source1)));
+    assertTrue(graph.containsVertex(filter));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source0), filter));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source1), filter));
+
+    filter.close();
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source0)));
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source1)));
+    assertFalse(graph.containsVertex(filter));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source0), filter));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source1), filter));
+  }
+
+  /**
+   * Connecting a source to different filters works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFiltersSourceDirectReattach()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var graph =
+      efx.signalGraph();
+
+    final var parameters =
+      new JAEFXFilterLowPassParameters(1.0, 1.0);
+    final var filter0 =
+      this.resources.add(efx.createFilterLowPass(parameters));
+    final var filter1 =
+      this.resources.add(efx.createFilterLowPass(parameters));
+
+    efx.attachSourceDirectOutputToFilter(source, filter0);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter0));
+    assertTrue(graph.containsVertex(filter1));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), filter0));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source), filter1));
+
+    final var old =
+      efx.attachSourceDirectOutputToFilter(source, filter1);
+
+    assertEquals(Optional.of(filter0), old);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter0));
+    assertTrue(graph.containsVertex(filter1));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), filter1));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source), filter0));
+  }
+
+  /**
+   * Connecting a source to a filter and then deleting the source works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXFiltersSourceDirectCloseSource()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+    final var source =
+      this.resources.add(context.createSource());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+    final var graph =
+      efx.signalGraph();
+
+    final var parameters =
+      new JAEFXFilterLowPassParameters(1.0, 1.0);
+    final var filter =
+      this.resources.add(efx.createFilterLowPass(parameters));
+
+    efx.attachSourceDirectOutputToFilter(source, filter);
+    assertTrue(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter));
+    assertTrue(graph.containsEdge(new JAEFXSourceNode(source), filter));
+
+    source.close();
+    assertFalse(graph.containsVertex(new JAEFXSourceNode(source)));
+    assertTrue(graph.containsVertex(filter));
+    assertFalse(graph.containsEdge(new JAEFXSourceNode(source), filter));
   }
 }

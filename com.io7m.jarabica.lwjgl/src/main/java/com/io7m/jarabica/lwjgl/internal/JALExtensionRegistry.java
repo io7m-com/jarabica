@@ -17,6 +17,7 @@
 
 package com.io7m.jarabica.lwjgl.internal;
 
+import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAExtensionType;
 
 import java.util.ArrayList;
@@ -107,11 +108,14 @@ public final class JALExtensionRegistry
    * @param <T>     The extension type
    *
    * @return The extension
+   *
+   * @throws JAException On errors
    */
 
   public <T extends JAExtensionType> Optional<T> extension(
     final JALContext context,
     final Class<T> clazz)
+    throws JAException
   {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(clazz, "clazz");

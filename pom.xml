@@ -173,6 +173,11 @@
         <artifactId>org.lwjgl.jemalloc</artifactId>
         <version>${org.lwjgl.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>1.5.1</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

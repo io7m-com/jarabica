@@ -14,37 +14,16 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.extensions.efx;
 
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAHandleType;
+package com.io7m.jarabica.lwjgl.internal;
+
+import com.io7m.jarabica.api.JAExtensionType;
 
 /**
- * The type of EFX effects.
- *
- * @param <P> The type of parameter values
+ * The base type of extensions.
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+public abstract class JALExtension implements JAExtensionType
 {
-  /**
-   * @return The current effect parameters
-   *
-   * @throws JAException On errors
-   */
-
-  P parameters()
-    throws JAException;
-
-  /**
-   * Set the effect parameters.
-   *
-   * @param parameters The new parameters
-   *
-   * @throws JAException On errors
-   */
-
-  void setParameters(P parameters)
-    throws JAException;
+  protected abstract void onSourceDeleted(JALSource source);
 }

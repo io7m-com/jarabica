@@ -25,6 +25,7 @@ module com.io7m.jarabica.extensions.efx
 
   requires transitive com.io7m.jtensors.core;
   requires transitive com.io7m.jarabica.api;
+  requires transitive org.jgrapht.core;
 
   exports com.io7m.jarabica.extensions.efx;
 }
