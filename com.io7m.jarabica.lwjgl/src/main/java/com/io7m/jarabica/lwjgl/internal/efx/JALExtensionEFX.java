@@ -14,33 +14,49 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.io7m.jarabica.api.JADeviceFactoryType;
-import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
-import com.io7m.jarabica.lwjgl.internal.efx.JALExtensionEFX;
+
+package com.io7m.jarabica.lwjgl.internal.efx;
+
+import com.io7m.jarabica.api.JAExtensionType;
+import com.io7m.jarabica.extensions.efx.JAEFXType;
+import com.io7m.jarabica.lwjgl.internal.JALContext;
 import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
 
 /**
- * Type-safe OpenAL frontend (LWJGL implementation).
+ * The EFX extension.
  */
 
-module com.io7m.jarabica.lwjgl
+public final class JALExtensionEFX implements JALExtensionFactoryType
 {
-  requires static org.osgi.annotation.bundle;
-  requires static org.osgi.annotation.versioning;
+  /**
+   * The EFX extension.
+   */
 
-  requires org.lwjgl.openal;
-  requires com.io7m.jxtrand.vanilla;
-  requires org.slf4j;
+  public JALExtensionEFX()
+  {
 
-  requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
+  }
 
-  uses JALExtensionFactoryType;
+  @Override
+  public Class<? extends JAExtensionType> extensionClass()
+  {
+    return JAEFXType.class;
+  }
 
-  exports com.io7m.jarabica.lwjgl;
+  @Override
+  public String name()
+  {
+    return JAEFXType.NAME;
+  }
 
-  provides JADeviceFactoryType
-    with JALWDeviceFactory;
-  provides JALExtensionFactoryType
-    with JALExtensionEFX;
+  @Override
+  public JAExtensionType create(
+    final JALContext context)
+  {
+    return new JALExtensionEFXContext(
+      context,
+      context.errorChecker(),
+      context.strings()
+    );
+  }
 }

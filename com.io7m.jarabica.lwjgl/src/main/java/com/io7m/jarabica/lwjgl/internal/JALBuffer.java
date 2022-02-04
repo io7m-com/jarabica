@@ -29,9 +29,8 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-final class JALBuffer implements JABufferType
+final class JALBuffer extends JALHandle implements JABufferType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALBuffer.class);
@@ -41,7 +40,6 @@ final class JALBuffer implements JABufferType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int bufferHandle;
-  private final AtomicBoolean closed;
   private final HashSet<JALSource> attachedSources;
 
   JALBuffer(
@@ -51,6 +49,8 @@ final class JALBuffer implements JABufferType
     final JALErrorChecker inErrorChecker,
     final int inSourceHandle)
   {
+    super("buffer", inSourceHandle, inStrings);
+
     this.context =
       Objects.requireNonNull(inContext, "context");
     this.stack =
@@ -62,8 +62,6 @@ final class JALBuffer implements JABufferType
     this.bufferHandle = inSourceHandle;
     this.attachedSources =
       new HashSet<>();
-    this.closed =
-      new AtomicBoolean(false);
   }
 
   private static int alFormatOf(
@@ -78,18 +76,18 @@ final class JALBuffer implements JABufferType
   }
 
   @Override
-  public void close()
+  protected Logger logger()
+  {
+    return LOG;
+  }
+
+  @Override
+  protected void closeActual()
     throws JAException
   {
     if (this.attachedSources.isEmpty()) {
-      if (this.closed.compareAndSet(false, true)) {
-        AL10.alDeleteBuffers(this.bufferHandle);
-        this.errorChecker.checkErrors("alDeleteBuffers");
-
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("closed buffer: {}", this);
-        }
-      }
+      AL10.alDeleteBuffers(this.bufferHandle);
+      this.errorChecker.checkErrors("alDeleteBuffers");
     } else {
       throw new JAMisuseException(
         this.strings.format(
@@ -99,17 +97,11 @@ final class JALBuffer implements JABufferType
   }
 
   @Override
-  public boolean isClosed()
-  {
-    return this.closed.get();
-  }
-
-  @Override
   public String toString()
   {
     return new StringBuilder(64)
       .append("[JALBuffer ")
-      .append(Integer.toUnsignedString(this.bufferHandle))
+      .append(this.handleString())
       .append("]")
       .toString();
   }
@@ -117,7 +109,7 @@ final class JALBuffer implements JABufferType
   void check()
     throws JAException
   {
-    if (this.closed.get()) {
+    if (this.isClosed()) {
       throw new JAMisuseException(
         this.strings.format("errorClosed", this));
     }

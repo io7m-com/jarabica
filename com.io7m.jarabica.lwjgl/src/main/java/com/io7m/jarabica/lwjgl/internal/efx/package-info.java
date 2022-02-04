@@ -14,43 +14,11 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
-package com.io7m.jarabica.lwjgl.internal;
-
-import com.io7m.jarabica.api.JAExtensionType;
-import com.io7m.jarabica.extensions.efx.JAEFXType;
-
 /**
- * The EFX extension.
+ * Type-safe OpenAL frontend (LWJGL implementation [Internals [EFX]]).
  */
 
-public final class JALExtensionEFX implements JALExtensionFactoryType
-{
-  /**
-   * The EFX extension.
-   */
+@Version("1.0.0")
+package com.io7m.jarabica.lwjgl.internal.efx;
 
-  public JALExtensionEFX()
-  {
-
-  }
-
-  @Override
-  public Class<? extends JAExtensionType> extensionClass()
-  {
-    return JAEFXType.class;
-  }
-
-  @Override
-  public String name()
-  {
-    return JAEFXType.NAME;
-  }
-
-  @Override
-  public JAExtensionType create(
-    final JALContext context)
-  {
-    return new JALExtensionEFXContext(context);
-  }
-}
+import org.osgi.annotation.versioning.Version;

@@ -19,7 +19,6 @@ package com.io7m.jarabica.lwjgl.internal;
 
 import com.io7m.jarabica.api.JABufferType;
 import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.api.JASourceState;
 import com.io7m.jarabica.api.JASourceType;
 import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
@@ -30,14 +29,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_INITIAL;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PAUSED;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PLAYING;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_STOPPED;
 
-final class JALSource implements JASourceType
+final class JALSource extends JALHandle implements JASourceType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALSource.class);
@@ -47,7 +45,6 @@ final class JALSource implements JASourceType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int sourceHandle;
-  private final AtomicBoolean closed;
   private JALBuffer currentBuffer;
 
   JALSource(
@@ -57,6 +54,8 @@ final class JALSource implements JASourceType
     final JALErrorChecker inErrorChecker,
     final int inSourceHandle)
   {
+    super("source", inSourceHandle, inStrings);
+
     this.context =
       Objects.requireNonNull(inContext, "context");
     this.stack =
@@ -66,7 +65,6 @@ final class JALSource implements JASourceType
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.sourceHandle = inSourceHandle;
-    this.closed = new AtomicBoolean(false);
   }
 
   private static JASourceState toSourceState(
@@ -82,23 +80,17 @@ final class JALSource implements JASourceType
   }
 
   @Override
-  public void close()
-    throws JAException
+  protected Logger logger()
   {
-    if (this.closed.compareAndSet(false, true)) {
-      AL10.alDeleteSources(this.sourceHandle);
-      this.errorChecker.checkErrors("alDeleteSources");
-
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("closed source: {}", this);
-      }
-    }
+    return LOG;
   }
 
   @Override
-  public boolean isClosed()
+  protected void closeActual()
+    throws JAException
   {
-    return this.closed.get();
+    AL10.alDeleteSources(this.sourceHandle);
+    this.errorChecker.checkErrors("alDeleteSources");
   }
 
   @Override
@@ -106,7 +98,7 @@ final class JALSource implements JASourceType
   {
     return new StringBuilder(64)
       .append("[JALSource ")
-      .append(Integer.toUnsignedString(this.sourceHandle))
+      .append(this.handleString())
       .append("]")
       .toString();
   }
@@ -338,11 +330,7 @@ final class JALSource implements JASourceType
   private void check()
     throws JAException
   {
-    if (this.closed.get()) {
-      throw new JAMisuseException(
-        this.strings.format("errorClosed", this));
-    }
-
+    this.checkNotClosed();
     this.context.checkCurrent(this, this.context);
   }
 }

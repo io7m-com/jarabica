@@ -34,9 +34,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-final class JALContext implements JAContextType
+/**
+ * The basic context type.
+ */
+
+public final class JALContext extends JALHandle implements JAContextType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALContext.class);
@@ -48,7 +51,6 @@ final class JALContext implements JAContextType
   private final long contextHandle;
   private final ALCCapabilities alcCapabilities;
   private final ALCapabilities alCapabilities;
-  private final AtomicBoolean closed;
   private final JALListener listener;
   private final JALExtensionRegistry extensions;
 
@@ -62,6 +64,8 @@ final class JALContext implements JAContextType
     final ALCapabilities inAlCapabilities,
     final JALExtensionRegistry inExtensions)
   {
+    super("context", inContextHandle, inStrings);
+
     this.device =
       Objects.requireNonNull(inDevice, "device");
     this.stack =
@@ -80,41 +84,33 @@ final class JALContext implements JAContextType
       Objects.requireNonNull(inExtensions, "extensions");
     this.listener =
       new JALListener(this, this.stack, this.strings, this.errorChecker);
-
-    this.closed =
-      new AtomicBoolean(false);
   }
 
   @Override
-  public void close()
+  protected Logger logger()
   {
-    if (this.closed.compareAndSet(false, true)) {
-      final var current = ALC10.alcGetCurrentContext();
-      if (current == this.contextHandle) {
-        ALC10.alcMakeContextCurrent(0L);
-      }
+    return LOG;
+  }
 
-      this.device.contextDelete(this);
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("closed context: {}", this);
-      }
+  @Override
+  protected void closeActual()
+  {
+    final var current = ALC10.alcGetCurrentContext();
+    if (current == this.contextHandle) {
+      ALC10.alcMakeContextCurrent(0L);
     }
+
+    this.device.contextDelete(this);
   }
 
   @Override
   public String toString()
   {
     return new StringBuilder(64)
-      .append("[JALContext 0x")
-      .append(Long.toUnsignedString(this.contextHandle, 16))
+      .append("[JALContext ")
+      .append(this.handleString())
       .append("]")
       .toString();
-  }
-
-  @Override
-  public boolean isClosed()
-  {
-    return this.closed.get();
   }
 
   @Override
@@ -224,23 +220,29 @@ final class JALContext implements JAContextType
     return text;
   }
 
-  void check()
+  /**
+   * Check that this context is current and not closed.
+   *
+   * @throws JAException On errors
+   */
+
+  public void check()
     throws JAException
   {
     this.checkNotClosed();
     this.checkCurrent(this, this);
   }
 
-  private void checkNotClosed()
-    throws JAMisuseException
-  {
-    if (this.closed.get()) {
-      throw new JAMisuseException(
-        this.strings.format("errorClosed", this));
-    }
-  }
+  /**
+   * Check that the right context is current for the given object.
+   *
+   * @param object        The object
+   * @param objectContext The object's context
+   *
+   * @throws JAException On errors
+   */
 
-  void checkCurrent(
+  public void checkCurrent(
     final Object object,
     final JAContextType objectContext)
     throws JAException
@@ -262,8 +264,30 @@ final class JALContext implements JAContextType
     return this.contextHandle;
   }
 
-  long deviceHandle()
+  /**
+   * @return The handle to the underlying device
+   */
+
+  public long deviceHandle()
   {
     return this.device.handle();
+  }
+
+  /**
+   * @return The context's error checker
+   */
+
+  public JALErrorChecker errorChecker()
+  {
+    return this.errorChecker;
+  }
+
+  /**
+   * @return The context's strings
+   */
+
+  public JALStrings strings()
+  {
+    return this.strings;
   }
 }

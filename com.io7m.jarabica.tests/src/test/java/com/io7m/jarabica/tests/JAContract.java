@@ -697,4 +697,41 @@ public abstract class JAContract
 
     LOG.debug("max aux sends: {}", extension.maxAuxiliarySends());
   }
+
+  /**
+   * Creating effects works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffects0()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+
+    final var extension =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var effect =
+      this.resources.add(extension.createEffectEcho());
+
+    effect.setDelay(0.05);
+    assertEquals(0.05, effect.delay(), 0.0001);
+    effect.setDelayLR(0.06);
+    assertEquals(0.06, effect.delayLR(), 0.0001);
+    effect.setFeedback(0.25);
+    assertEquals(0.25, effect.feedback(), 0.0001);
+    effect.setDamping(0.3);
+    assertEquals(0.3, effect.damping(), 0.0001);
+    effect.setSpread(0.1);
+    assertEquals(0.1, effect.spread(), 0.0001);
+  }
 }

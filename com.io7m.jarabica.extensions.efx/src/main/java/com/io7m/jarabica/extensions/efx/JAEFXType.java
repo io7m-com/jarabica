@@ -40,4 +40,15 @@ public interface JAEFXType extends JAExtensionContextType
 
   int maxAuxiliarySends()
     throws JAException;
+
+  /**
+   * Create an echo effect.
+   *
+   * @return The effect
+   *
+   * @throws JAException On errors
+   */
+
+  JAEFXEffectEchoType createEffectEcho()
+    throws JAException;
 }

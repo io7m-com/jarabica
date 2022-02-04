@@ -21,7 +21,6 @@ import com.io7m.jarabica.api.JADeviceException;
 import com.io7m.jarabica.api.JADeviceType;
 import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAExtensionConfigurationType;
-import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
 import com.io7m.jarabica.extensions.efx.JAEFXType;
 import org.lwjgl.openal.AL;
@@ -39,13 +38,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An open device.
  */
 
-public final class JALDevice implements JADeviceType
+public final class JALDevice extends JALHandle implements JADeviceType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALDevice.class);
@@ -53,7 +51,6 @@ public final class JALDevice implements JADeviceType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final long handle;
-  private final AtomicBoolean closed;
   private final MemoryStack stack;
   private final HashMap<Long, JALContext> contexts;
   private JALContext contextCurrent;
@@ -62,9 +59,9 @@ public final class JALDevice implements JADeviceType
   /**
    * An open device.
    *
-   * @param inStrings                 A string provider
-   * @param inErrorChecker            An error checker
-   * @param inHandle                  The device handle
+   * @param inStrings      A string provider
+   * @param inErrorChecker An error checker
+   * @param inHandle       The device handle
    */
 
   public JALDevice(
@@ -72,52 +69,46 @@ public final class JALDevice implements JADeviceType
     final JALErrorChecker inErrorChecker,
     final long inHandle)
   {
+    super("device", inHandle, inStrings);
+
     this.strings =
       Objects.requireNonNull(inStrings, "inStrings");
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.handle = inHandle;
-    this.closed =
-      new AtomicBoolean(false);
     this.stack =
       MemoryStack.create()
         .push();
 
-    this.contexts = new HashMap<Long, JALContext>();
+    this.contexts = new HashMap<>();
     this.contextCurrent = null;
   }
 
   @Override
-  public void close()
-    throws JAException
+  protected Logger logger()
   {
-    if (this.closed.compareAndSet(false, true)) {
-      this.stack.close();
-
-      final var ok = ALC10.alcCloseDevice(this.handle);
-      if (!ok) {
-        throw new JADeviceException(
-          this.strings.format("errorDeviceClose"));
-      }
-
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("closed device: {}", this);
-      }
-    }
+    return LOG;
   }
 
   @Override
-  public boolean isClosed()
+  protected void closeActual()
+    throws JAException
   {
-    return this.closed.get();
+    this.stack.close();
+
+    final var ok = ALC10.alcCloseDevice(this.handle);
+    if (!ok) {
+      throw new JADeviceException(
+        this.strings.format("errorDeviceClose"));
+    }
   }
 
   @Override
   public String toString()
   {
     return new StringBuilder(64)
-      .append("[JALDevice 0x")
-      .append(Long.toUnsignedString(this.handle, 16))
+      .append("[JALDevice ")
+      .append(this.handleString())
       .append("]")
       .toString();
   }
@@ -129,6 +120,12 @@ public final class JALDevice implements JADeviceType
   {
     this.check();
     return this.contextCreate(extensionConfigurations);
+  }
+
+  private void check()
+    throws JAException
+  {
+    this.checkNotClosed();
   }
 
   @Override
@@ -207,7 +204,6 @@ public final class JALDevice implements JADeviceType
         AL.createCapabilities(alcCapabilities);
 
 
-
       final var context =
         new JALContext(
           this,
@@ -229,15 +225,6 @@ public final class JALDevice implements JADeviceType
       this.contexts.put(Long.valueOf(contextHandle), context);
       this.contextCurrent = context;
       return context;
-    }
-  }
-
-  private void check()
-    throws JAMisuseException
-  {
-    if (this.closed.get()) {
-      throw new JAMisuseException(
-        this.strings.format("errorClosed", this));
     }
   }
 

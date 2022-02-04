@@ -14,44 +14,16 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+package com.io7m.jarabica.extensions.efx;
 
-package com.io7m.jarabica.lwjgl.internal;
-
-import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.extensions.efx.JAEFXType;
-import org.lwjgl.openal.ALC10;
-import org.lwjgl.openal.EXTEfx;
-
-import java.util.Objects;
+import com.io7m.jarabica.api.JAHandleType;
 
 /**
- * The EFX extension.
+ * The type of EFX effects.
  */
 
-public final class JALExtensionEFXContext implements JAEFXType
+public sealed interface JAEFXEffectType
+  extends JAHandleType permits JAEFXEffectEchoType
 {
-  private final JALContext context;
 
-  /**
-   * The EFX extension.
-   *
-   * @param inContext The context
-   */
-
-  public JALExtensionEFXContext(
-    final JALContext inContext)
-  {
-    this.context = Objects.requireNonNull(inContext, "context");
-  }
-
-  @Override
-  public int maxAuxiliarySends()
-    throws JAException
-  {
-    this.context.check();
-    return ALC10.alcGetInteger(
-      this.context.deviceHandle(),
-      EXTEfx.ALC_MAX_AUXILIARY_SENDS
-    );
-  }
 }
