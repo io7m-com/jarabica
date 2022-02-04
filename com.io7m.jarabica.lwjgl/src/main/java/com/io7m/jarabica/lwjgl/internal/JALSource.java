@@ -69,6 +69,18 @@ final class JALSource implements JASourceType
     this.closed = new AtomicBoolean(false);
   }
 
+  private static JASourceState toSourceState(
+    final int x)
+  {
+    return switch (x) {
+      case AL10.AL_PLAYING -> SOURCE_STATE_PLAYING;
+      case AL10.AL_PAUSED -> SOURCE_STATE_PAUSED;
+      case AL10.AL_STOPPED -> SOURCE_STATE_STOPPED;
+      case AL10.AL_INITIAL -> SOURCE_STATE_INITIAL;
+      default -> throw new IllegalStateException("Unrecognized state value: " + x);
+    };
+  }
+
   @Override
   public void close()
     throws JAException
@@ -278,7 +290,7 @@ final class JALSource implements JASourceType
       AL10.AL_GAIN
     );
     this.errorChecker.checkErrors("alGetSourcef");
-    return (double) r;
+    return r;
   }
 
   @Override
@@ -305,7 +317,7 @@ final class JALSource implements JASourceType
       AL10.AL_PITCH
     );
     this.errorChecker.checkErrors("alGetSourcef");
-    return (double) r;
+    return r;
   }
 
   @Override
@@ -321,18 +333,6 @@ final class JALSource implements JASourceType
       (float) m
     );
     this.errorChecker.checkErrors("alSourcef");
-  }
-
-  private static JASourceState toSourceState(
-    final int x)
-  {
-    return switch (x) {
-      case AL10.AL_PLAYING -> SOURCE_STATE_PLAYING;
-      case AL10.AL_PAUSED -> SOURCE_STATE_PAUSED;
-      case AL10.AL_STOPPED -> SOURCE_STATE_STOPPED;
-      case AL10.AL_INITIAL -> SOURCE_STATE_INITIAL;
-      default -> throw new IllegalStateException("Unrecognized state value: " + x);
-    };
   }
 
   private void check()

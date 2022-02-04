@@ -14,33 +14,50 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.io7m.jarabica.api.JADeviceFactoryType;
-import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionEFX;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
+
+package com.io7m.jarabica.lwjgl.internal;
+
+import com.io7m.jarabica.api.JAExtensionType;
+
+import java.util.SortedSet;
 
 /**
- * Type-safe OpenAL frontend (LWJGL implementation).
+ * A factory of extensions.
  */
 
-module com.io7m.jarabica.lwjgl
+public interface JALExtensionFactoryType
 {
-  requires static org.osgi.annotation.bundle;
-  requires static org.osgi.annotation.versioning;
+  /**
+   * @return The implemented extension class
+   */
 
-  requires org.lwjgl.openal;
-  requires com.io7m.jxtrand.vanilla;
-  requires org.slf4j;
+  Class<? extends JAExtensionType> extensionClass();
 
-  requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
+  /**
+   * @param extensions The list of supported device extension strings
+   *
+   * @return {@code true} if the extension is supported
+   */
 
-  uses JALExtensionFactoryType;
+  default boolean isSupported(
+    final SortedSet<String> extensions)
+  {
+    return extensions.contains(this.name());
+  }
 
-  exports com.io7m.jarabica.lwjgl;
+  /**
+   * @return The extension name
+   */
 
-  provides JADeviceFactoryType
-    with JALWDeviceFactory;
-  provides JALExtensionFactoryType
-    with JALExtensionEFX;
+  String name();
+
+  /**
+   * Create a new extension instance.
+   *
+   * @param context The context
+   *
+   * @return A new extension instance
+   */
+
+  JAExtensionType create(JALContext context);
 }

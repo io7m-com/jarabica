@@ -14,33 +14,30 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.io7m.jarabica.api.JADeviceFactoryType;
-import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionEFX;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
+
+package com.io7m.jarabica.extensions.efx;
+
+import com.io7m.jarabica.api.JAException;
+import com.io7m.jarabica.api.JAExtensionContextType;
 
 /**
- * Type-safe OpenAL frontend (LWJGL implementation).
+ * The EFX extension.
  */
 
-module com.io7m.jarabica.lwjgl
+public interface JAEFXType extends JAExtensionContextType
 {
-  requires static org.osgi.annotation.bundle;
-  requires static org.osgi.annotation.versioning;
+  /**
+   * The official extension name.
+   */
 
-  requires org.lwjgl.openal;
-  requires com.io7m.jxtrand.vanilla;
-  requires org.slf4j;
+  String NAME = "ALC_EXT_EFX";
 
-  requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
+  /**
+   * @return The maximum number of supported auxiliary sends.
+   *
+   * @throws JAException On errors
+   */
 
-  uses JALExtensionFactoryType;
-
-  exports com.io7m.jarabica.lwjgl;
-
-  provides JADeviceFactoryType
-    with JALWDeviceFactory;
-  provides JALExtensionFactoryType
-    with JALExtensionEFX;
+  int maxAuxiliarySends()
+    throws JAException;
 }

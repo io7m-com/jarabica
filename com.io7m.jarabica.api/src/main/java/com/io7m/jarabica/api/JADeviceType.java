@@ -16,6 +16,7 @@
 
 package com.io7m.jarabica.api;
 
+import java.util.List;
 import java.util.SortedSet;
 
 /**
@@ -27,13 +28,30 @@ public interface JADeviceType extends JAHandleType
   /**
    * Create a new context for the device. The new context will be made current.
    *
+   * @param extensions The extension configurations
+   *
    * @return A new context
    *
    * @throws JAException On errors
    */
 
-  JAContextType createContext()
+  JAContextType createContext(
+    List<JAExtensionConfigurationType> extensions)
     throws JAException;
+
+  /**
+   * Create a new context for the device. The new context will be made current.
+   *
+   * @return A new context
+   *
+   * @throws JAException On errors
+   */
+
+  default JAContextType createContext()
+    throws JAException
+  {
+    return this.createContext(List.of());
+  }
 
   /**
    * @return The list of supported extension names

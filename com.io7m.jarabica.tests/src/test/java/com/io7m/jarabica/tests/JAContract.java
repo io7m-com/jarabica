@@ -21,12 +21,15 @@ import com.io7m.jarabica.api.JADeviceDescription;
 import com.io7m.jarabica.api.JADeviceFactoryType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
+import com.io7m.jarabica.extensions.efx.JAEFXType;
 import com.io7m.jmulticlose.core.CloseableCollection;
 import com.io7m.jmulticlose.core.CloseableCollectionType;
 import com.io7m.jmulticlose.core.ClosingResourceFailedException;
 import com.io7m.jtensors.core.parameterized.vectors.PVector3D;
 import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -666,5 +669,32 @@ public abstract class JAContract
     });
 
     context0.setCurrent();
+  }
+
+  /**
+   * Opening EFX works on supporting devices.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFX()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext(
+        List.of(new JAEFXConfiguration(8))
+      ));
+
+    final var extension =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    LOG.debug("max aux sends: {}", extension.maxAuxiliarySends());
   }
 }

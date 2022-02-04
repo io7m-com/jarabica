@@ -16,12 +16,30 @@
 
 package com.io7m.jarabica.api;
 
+import java.util.Optional;
+
 /**
  * A device context.
  */
 
 public interface JAContextType extends JAHandleType
 {
+  /**
+   * Obtain access to the given extension, if supported.
+   *
+   * @param clazz The extension type
+   * @param <T>   The extension type
+   *
+   * @return The given extension, if supported
+   *
+   * @throws JAException On errors
+   * @see JADeviceType#extensions()
+   */
+
+  <T extends JAExtensionContextType>
+  Optional<T> extension(Class<T> clazz)
+    throws JAException;
+
   /**
    * @return {@code true} if the context is current
    *

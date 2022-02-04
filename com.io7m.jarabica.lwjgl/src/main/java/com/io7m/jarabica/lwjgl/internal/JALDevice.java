@@ -16,15 +16,18 @@
 
 package com.io7m.jarabica.lwjgl.internal;
 
-import com.io7m.jarabica.api.JACallException;
 import com.io7m.jarabica.api.JAContextType;
 import com.io7m.jarabica.api.JADeviceException;
 import com.io7m.jarabica.api.JADeviceType;
 import com.io7m.jarabica.api.JAException;
+import com.io7m.jarabica.api.JAExtensionConfigurationType;
 import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
+import com.io7m.jarabica.extensions.efx.JAEFXType;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.EXTEfx;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +62,9 @@ public final class JALDevice implements JADeviceType
   /**
    * An open device.
    *
-   * @param inErrorChecker An error checker
-   * @param inStrings      A string provider
-   * @param inHandle       The device handle
+   * @param inStrings                 A string provider
+   * @param inErrorChecker            An error checker
+   * @param inHandle                  The device handle
    */
 
   public JALDevice(
@@ -120,12 +123,12 @@ public final class JALDevice implements JADeviceType
   }
 
   @Override
-  public JAContextType createContext()
+  public JAContextType createContext(
+    final List<JAExtensionConfigurationType> extensionConfigurations)
     throws JAException
   {
     this.check();
-
-    return this.contextCreate();
+    return this.contextCreate(extensionConfigurations);
   }
 
   @Override
@@ -162,47 +165,71 @@ public final class JALDevice implements JADeviceType
     return ALC10.alcGetInteger(this.handle, ALC10.ALC_MINOR_VERSION);
   }
 
-  private JALContext contextCreate()
-    throws JADeviceException, JACallException
+  private JALContext contextCreate(
+    final List<JAExtensionConfigurationType> extensionConfigurations)
+    throws JAException
   {
-    final var contextHandle =
-      ALC10.alcCreateContext(this.handle, (IntBuffer) null);
+    try (var current = this.stack.push()) {
+      final var exts =
+        this.extensions();
+      final var extensionRegistry =
+        JALExtensionRegistry.createFromServiceLoader(exts);
 
-    if (contextHandle == 0L) {
-      throw new JADeviceException(
-        this.strings.format(
-          "errorContextCreate",
-          Long.toUnsignedString(this.handle, 16))
-      );
+      IntBuffer attributes = null;
+      for (final var config : extensionConfigurations) {
+        if (config instanceof JAEFXConfiguration efxConfig) {
+          if (exts.contains(JAEFXType.NAME)) {
+            attributes = current.mallocInt(4);
+            attributes.put(0, EXTEfx.ALC_MAX_AUXILIARY_SENDS);
+            attributes.put(1, efxConfig.maxAuxiliarySends());
+            attributes.put(2, 0);
+            attributes.put(3, 0);
+          }
+        }
+      }
+
+      final var contextHandle =
+        ALC10.alcCreateContext(this.handle, attributes);
+
+      if (contextHandle == 0L) {
+        throw new JADeviceException(
+          this.strings.format(
+            "errorContextCreate",
+            Long.toUnsignedString(this.handle, 16))
+        );
+      }
+
+      ALC10.alcMakeContextCurrent(contextHandle);
+
+      final var alcCapabilities =
+        ALC.createCapabilities(this.handle);
+      final var alCapabilities =
+        AL.createCapabilities(alcCapabilities);
+
+
+
+      final var context =
+        new JALContext(
+          this,
+          this.stack,
+          this.strings,
+          this.errorChecker,
+          contextHandle,
+          alcCapabilities,
+          alCapabilities,
+          extensionRegistry
+        );
+
+      this.errorChecker.checkErrors("alcMakeContextCurrent");
+
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("created context: {}", context);
+      }
+
+      this.contexts.put(Long.valueOf(contextHandle), context);
+      this.contextCurrent = context;
+      return context;
     }
-
-    ALC10.alcMakeContextCurrent(contextHandle);
-
-    final var alcCapabilities =
-      ALC.createCapabilities(this.handle);
-    final var alCapabilities =
-      AL.createCapabilities(alcCapabilities);
-
-    final var context =
-      new JALContext(
-        this,
-        this.stack,
-        this.strings,
-        this.errorChecker,
-        contextHandle,
-        alcCapabilities,
-        alCapabilities
-      );
-
-    this.errorChecker.checkErrors("alcMakeContextCurrent");
-
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("created context: {}", context);
-    }
-
-    this.contexts.put(Long.valueOf(contextHandle), context);
-    this.contextCurrent = context;
-    return context;
   }
 
   private void check()
@@ -231,5 +258,10 @@ public final class JALDevice implements JADeviceType
         this.contextCurrent = null;
       }
     }
+  }
+
+  long handle()
+  {
+    return this.handle;
   }
 }

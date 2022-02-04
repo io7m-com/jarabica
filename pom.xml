@@ -24,6 +24,7 @@
     <module>com.io7m.jarabica.api</module>
     <module>com.io7m.jarabica.tests</module>
     <module>com.io7m.jarabica.lwjgl</module>
+    <module>com.io7m.jarabica.extensions.efx</module>
   </modules>
 
   <properties>

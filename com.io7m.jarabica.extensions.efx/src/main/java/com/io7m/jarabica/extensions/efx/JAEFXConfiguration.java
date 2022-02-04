@@ -14,33 +14,18 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.io7m.jarabica.api.JADeviceFactoryType;
-import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionEFX;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
+package com.io7m.jarabica.extensions.efx;
+
+import com.io7m.jarabica.api.JAExtensionConfigurationType;
 
 /**
- * Type-safe OpenAL frontend (LWJGL implementation).
+ * Configuration information for the extension.
+ *
+ * @param maxAuxiliarySends A hint for the maximum number of aux sends required
  */
 
-module com.io7m.jarabica.lwjgl
+public record JAEFXConfiguration(int maxAuxiliarySends)
+  implements JAExtensionConfigurationType
 {
-  requires static org.osgi.annotation.bundle;
-  requires static org.osgi.annotation.versioning;
 
-  requires org.lwjgl.openal;
-  requires com.io7m.jxtrand.vanilla;
-  requires org.slf4j;
-
-  requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
-
-  uses JALExtensionFactoryType;
-
-  exports com.io7m.jarabica.lwjgl;
-
-  provides JADeviceFactoryType
-    with JALWDeviceFactory;
-  provides JALExtensionFactoryType
-    with JALExtensionEFX;
 }

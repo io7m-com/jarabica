@@ -20,6 +20,7 @@ package com.io7m.jarabica.lwjgl.internal;
 import com.io7m.jarabica.api.JABufferType;
 import com.io7m.jarabica.api.JAContextType;
 import com.io7m.jarabica.api.JAException;
+import com.io7m.jarabica.api.JAExtensionContextType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.api.JASourceType;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 final class JALContext implements JAContextType
@@ -48,6 +50,7 @@ final class JALContext implements JAContextType
   private final ALCapabilities alCapabilities;
   private final AtomicBoolean closed;
   private final JALListener listener;
+  private final JALExtensionRegistry extensions;
 
   JALContext(
     final JALDevice inDevice,
@@ -56,7 +59,8 @@ final class JALContext implements JAContextType
     final JALErrorChecker inErrorChecker,
     final long inContextHandle,
     final ALCCapabilities inAlcCapabilities,
-    final ALCapabilities inAlCapabilities)
+    final ALCapabilities inAlCapabilities,
+    final JALExtensionRegistry inExtensions)
   {
     this.device =
       Objects.requireNonNull(inDevice, "device");
@@ -72,6 +76,8 @@ final class JALContext implements JAContextType
       Objects.requireNonNull(inAlcCapabilities, "alcCapabilities");
     this.alCapabilities =
       Objects.requireNonNull(inAlCapabilities, "alCapabilities");
+    this.extensions =
+      Objects.requireNonNull(inExtensions, "extensions");
     this.listener =
       new JALListener(this, this.stack, this.strings, this.errorChecker);
 
@@ -109,6 +115,15 @@ final class JALContext implements JAContextType
   public boolean isClosed()
   {
     return this.closed.get();
+  }
+
+  @Override
+  public <T extends JAExtensionContextType> Optional<T> extension(
+    final Class<T> clazz)
+    throws JAException
+  {
+    this.checkNotClosed();
+    return this.extensions.extension(this, clazz);
   }
 
   @Override
@@ -209,7 +224,7 @@ final class JALContext implements JAContextType
     return text;
   }
 
-  private void check()
+  void check()
     throws JAException
   {
     this.checkNotClosed();
@@ -245,5 +260,10 @@ final class JALContext implements JAContextType
   long handle()
   {
     return this.contextHandle;
+  }
+
+  long deviceHandle()
+  {
+    return this.device.handle();
   }
 }

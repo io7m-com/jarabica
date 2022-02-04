@@ -14,33 +14,17 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.io7m.jarabica.api.JADeviceFactoryType;
-import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionEFX;
-import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
-
 /**
- * Type-safe OpenAL frontend (LWJGL implementation).
+ * Type-safe OpenAL frontend (EFX extension API).
  */
 
-module com.io7m.jarabica.lwjgl
+module com.io7m.jarabica.extensions.efx
 {
   requires static org.osgi.annotation.bundle;
   requires static org.osgi.annotation.versioning;
 
-  requires org.lwjgl.openal;
-  requires com.io7m.jxtrand.vanilla;
-  requires org.slf4j;
-
+  requires transitive com.io7m.jtensors.core;
   requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
 
-  uses JALExtensionFactoryType;
-
-  exports com.io7m.jarabica.lwjgl;
-
-  provides JADeviceFactoryType
-    with JALWDeviceFactory;
-  provides JALExtensionFactoryType
-    with JALExtensionEFX;
+  exports com.io7m.jarabica.extensions.efx;
 }
