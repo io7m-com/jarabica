@@ -25,10 +25,8 @@ import com.io7m.jarabica.api.JAHandleType;
  * @param <P> The type of parameter values
  */
 
-public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEAXReverbType,
-  JAEFXEffectEchoType,
-  JAEFXEffectReverbType
+public non-sealed interface JAEFXEffectType<P>
+  extends JAHandleType, JAEFXGraphNodeType
 {
   /**
    * @return The current effect parameters

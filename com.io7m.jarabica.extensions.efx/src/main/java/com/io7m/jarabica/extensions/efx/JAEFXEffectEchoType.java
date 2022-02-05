@@ -21,7 +21,7 @@ package com.io7m.jarabica.extensions.efx;
  * An echo effect.
  */
 
-public non-sealed interface JAEFXEffectEchoType
+public interface JAEFXEffectEchoType
   extends JAEFXEffectType<JAEFXEffectEchoParameters>
 {
 

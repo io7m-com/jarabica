@@ -21,7 +21,7 @@ package com.io7m.jarabica.extensions.efx;
  * A reverb effect.
  */
 
-public non-sealed interface JAEFXEffectReverbType
+public interface JAEFXEffectReverbType
   extends JAEFXEffectType<JAEFXEffectReverbParameters>
 {
 

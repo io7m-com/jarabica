@@ -21,7 +21,7 @@ package com.io7m.jarabica.extensions.efx;
  * A high-pass filter.
  */
 
-public non-sealed interface JAEFXFilterHighPassType
+public interface JAEFXFilterHighPassType
   extends JAEFXFilterType<JAEFXFilterHighPassParameters>
 {
 

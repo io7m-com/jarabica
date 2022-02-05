@@ -25,9 +25,8 @@ import com.io7m.jarabica.api.JAHandleType;
  * @param <P> The type of parameter values
  */
 
-public sealed interface JAEFXFilterType<P>
+public non-sealed interface JAEFXFilterType<P>
   extends JAHandleType, JAEFXGraphNodeType
-  permits JAEFXFilterHighPassType, JAEFXFilterLowPassType
 {
   /**
    * @return The current filter parameters
