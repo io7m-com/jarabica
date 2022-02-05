@@ -854,8 +854,6 @@ public final class MainController implements Initializable
         dataBuffer
       );
 
-      LOG.debug("buffer is {} octets", data.length);
-
       final var source = this.context.createSource();
       this.efx.attachSourceDirectToEffectsSlot(source, this.mainEffectSlot);
 
