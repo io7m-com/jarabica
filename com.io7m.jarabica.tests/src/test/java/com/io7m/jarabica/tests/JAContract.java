@@ -1042,6 +1042,14 @@ public abstract class JAContract
 
     assertTrue(graph.containsEdge(new JAEFXSourceNode(source), slot0));
     assertTrue(graph.containsEdge(slot0, effect0));
+
+    effect0.setParameters(new JAEFXEffectEchoParameters(
+      0.2,
+      0.2,
+      0.2,
+      0.2,
+      0.0
+    ));
   }
 
   /**

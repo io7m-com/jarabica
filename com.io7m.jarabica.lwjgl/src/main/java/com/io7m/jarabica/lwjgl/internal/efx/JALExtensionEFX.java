@@ -59,8 +59,7 @@ public final class JALExtensionEFX implements JALExtensionFactoryType
 
     return new JALExtensionEFXContext(
       context,
-      context.errorChecker(),
-      context.strings()
+      context.errorChecker()
     );
   }
 }

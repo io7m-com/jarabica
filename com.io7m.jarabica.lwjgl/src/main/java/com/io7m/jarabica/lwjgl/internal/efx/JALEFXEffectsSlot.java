@@ -87,6 +87,7 @@ public final class JALEFXEffectsSlot
           AL_EFFECTSLOT_EFFECT,
           AL_EFFECT_NULL);
         this.errors.checkErrors("alAuxiliaryEffectSloti");
+        continue;
       }
       if (edge instanceof JAEFXSourceDirectToEffectsSlot slot) {
         AL11.alSource3i(
@@ -97,6 +98,7 @@ public final class JALEFXEffectsSlot
           0
         );
         this.errors.checkErrors("alSource3i");
+        continue;
       }
     }
 

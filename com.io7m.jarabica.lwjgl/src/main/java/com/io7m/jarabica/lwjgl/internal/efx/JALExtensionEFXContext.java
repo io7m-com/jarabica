@@ -38,7 +38,6 @@ import com.io7m.jarabica.lwjgl.internal.JALContext;
 import com.io7m.jarabica.lwjgl.internal.JALErrorChecker;
 import com.io7m.jarabica.lwjgl.internal.JALExtension;
 import com.io7m.jarabica.lwjgl.internal.JALSource;
-import com.io7m.jarabica.lwjgl.internal.JALStrings;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
 import org.jgrapht.graph.DirectedAcyclicGraph;
@@ -71,12 +70,11 @@ import static org.lwjgl.openal.EXTEfx.alGenFilters;
  * The EFX extension.
  */
 
-public final class JALExtensionEFXContext extends JALExtension implements
-  JAEFXType
+public final class JALExtensionEFXContext
+  extends JALExtension implements JAEFXType
 {
   private final JALContext context;
   private final JALErrorChecker errorChecker;
-  private final JALStrings strings;
   private final DirectedAcyclicGraph<JAEFXGraphNodeType, JAEFXGraphEdgeType> signalGraph;
   private final AsUnmodifiableGraph<JAEFXGraphNodeType, JAEFXGraphEdgeType> signalGraphRead;
 
@@ -85,20 +83,16 @@ public final class JALExtensionEFXContext extends JALExtension implements
    *
    * @param inContext      The context
    * @param inErrorChecker An error checker
-   * @param inStrings      A provider of strings
    */
 
   public JALExtensionEFXContext(
     final JALContext inContext,
-    final JALErrorChecker inErrorChecker,
-    final JALStrings inStrings)
+    final JALErrorChecker inErrorChecker)
   {
     this.context =
       Objects.requireNonNull(inContext, "context");
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
-    this.strings =
-      Objects.requireNonNull(inStrings, "strings");
     this.signalGraph =
       new DirectedAcyclicGraph<>(JAEFXGraphEdgeType.class);
     this.signalGraphRead =
