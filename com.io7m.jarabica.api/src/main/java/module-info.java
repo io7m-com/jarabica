@@ -24,6 +24,7 @@ module com.io7m.jarabica.api
   requires static org.osgi.annotation.versioning;
 
   requires transitive com.io7m.jtensors.core;
+  requires transitive org.jgrapht.core;
 
   exports com.io7m.jarabica.api;
 }

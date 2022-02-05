@@ -60,6 +60,34 @@ public interface JAEFXType extends JAExtensionContextType
     throws JAException;
 
   /**
+   * Create a reverb effect.
+   *
+   * @param parameters The initial parameters
+   *
+   * @return The effect
+   *
+   * @throws JAException On errors
+   */
+
+  JAEFXEffectReverbType createEffectReverb(
+    JAEFXEffectReverbParameters parameters)
+    throws JAException;
+
+  /**
+   * Create an EAX reverb effect.
+   *
+   * @param parameters The initial parameters
+   *
+   * @return The effect
+   *
+   * @throws JAException On errors
+   */
+
+  JAEFXEffectEAXReverbType createEffectEAXReverb(
+    JAEFXEffectEAXReverbParameters parameters)
+    throws JAException;
+
+  /**
    * Create a low-pass filter.
    *
    * @param parameters The initial parameters

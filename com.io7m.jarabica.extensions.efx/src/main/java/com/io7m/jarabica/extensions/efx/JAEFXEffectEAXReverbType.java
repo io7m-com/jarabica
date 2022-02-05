@@ -14,32 +14,15 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.api;
 
-import java.nio.ByteBuffer;
+package com.io7m.jarabica.extensions.efx;
 
 /**
- * The type of buffer objects.
+ * A reverb effect.
  */
 
-public non-sealed interface JABufferType
-  extends JAHandleType, JASourceOrBufferType
+public non-sealed interface JAEFXEffectEAXReverbType
+  extends JAEFXEffectType<JAEFXEffectEAXReverbParameters>
 {
-  /**
-   * Set the buffer data. The provided byte buffer must be a direct byte
-   * buffer.
-   *
-   * @param format    The audio format
-   * @param frequency The audio frequency in hz
-   * @param data      The data
-   *
-   * @throws JAException On errors
-   * @see ByteBuffer#isDirect()
-   */
 
-  void setData(
-    JABufferFormat format,
-    int frequency,
-    ByteBuffer data)
-    throws JAException;
 }

@@ -14,32 +14,40 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.api;
 
-import java.nio.ByteBuffer;
+package com.io7m.jarabica.demo;
+
+import javafx.application.Platform;
+import javafx.stage.Stage;
 
 /**
- * The type of buffer objects.
+ * The main application.
  */
 
-public non-sealed interface JABufferType
-  extends JAHandleType, JASourceOrBufferType
+public final class Main
 {
+  private Main()
+  {
+
+  }
+
   /**
-   * Set the buffer data. The provided byte buffer must be a direct byte
-   * buffer.
+   * The main entry point.
    *
-   * @param format    The audio format
-   * @param frequency The audio frequency in hz
-   * @param data      The data
-   *
-   * @throws JAException On errors
-   * @see ByteBuffer#isDirect()
+   * @param args The command-line arguments
    */
 
-  void setData(
-    JABufferFormat format,
-    int frequency,
-    ByteBuffer data)
-    throws JAException;
+  public static void main(
+    final String[] args)
+  {
+    Platform.startup(() -> {
+      try {
+        final var stage = new Stage();
+        final var mainApplication = new MainApplication();
+        mainApplication.start(stage);
+      } catch (final Exception e) {
+        throw new IllegalStateException(e);
+      }
+    });
+  }
 }

@@ -21,6 +21,7 @@ import com.io7m.jarabica.api.JABufferFormat;
 import com.io7m.jarabica.api.JABufferType;
 import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.api.JASourceBufferLink;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ final class JALBuffer extends JALHandle implements JABufferType
           "errorBufferDeleteSources",
           this,
           sourcesUsingBuffer.stream()
-            .map(JALSourceBufferLink::source)
+            .map(JASourceBufferLink::source)
             .collect(Collectors.toList()))
       );
     }

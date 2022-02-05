@@ -40,5 +40,93 @@ public record JAEFXEffectEchoParameters(
   @JARange(lower = -1.0, upper = 1.0)
   double spread)
 {
+  /**
+   * Set the delay field.
+   *
+   * @param x The new value.
+   *
+   * @return A record with the new value set.
+   */
+  public JAEFXEffectEchoParameters withDelay(final double x)
+  {
+    return new JAEFXEffectEchoParameters(
+      x,
+      this.delayLR,
+      this.damping,
+      this.feedback,
+      this.spread
+    );
+  }
 
+  /**
+   * Set the delayLR field.
+   *
+   * @param x The new value.
+   *
+   * @return A record with the new value set.
+   */
+  public JAEFXEffectEchoParameters withDelayLR(final double x)
+  {
+    return new JAEFXEffectEchoParameters(
+      this.delay,
+      x,
+      this.damping,
+      this.feedback,
+      this.spread
+    );
+  }
+
+  /**
+   * Set the damping field.
+   *
+   * @param x The new value.
+   *
+   * @return A record with the new value set.
+   */
+  public JAEFXEffectEchoParameters withDamping(final double x)
+  {
+    return new JAEFXEffectEchoParameters(
+      this.delay,
+      this.delayLR,
+      x,
+      this.feedback,
+      this.spread
+    );
+  }
+
+  /**
+   * Set the feedback field.
+   *
+   * @param x The new value.
+   *
+   * @return A record with the new value set.
+   */
+  public JAEFXEffectEchoParameters withFeedback(final double x)
+  {
+    return new JAEFXEffectEchoParameters(
+      this.delay,
+      this.delayLR,
+      this.damping,
+      x,
+      this.spread
+    );
+  }
+
+  /**
+   * Set the spread field.
+   *
+   * @param x The new value.
+   *
+   * @return A record with the new value set.
+   */
+  public JAEFXEffectEchoParameters withSpread(final double x)
+  {
+    return new JAEFXEffectEchoParameters(
+      this.delay,
+      this.delayLR,
+      this.damping,
+      this.feedback,
+      x
+    );
+  }
 }

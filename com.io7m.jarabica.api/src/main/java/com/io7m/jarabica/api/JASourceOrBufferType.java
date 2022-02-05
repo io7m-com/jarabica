@@ -14,32 +14,15 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+
 package com.io7m.jarabica.api;
 
-import java.nio.ByteBuffer;
-
 /**
- * The type of buffer objects.
+ * A source or a buffer.
  */
 
-public non-sealed interface JABufferType
-  extends JAHandleType, JASourceOrBufferType
+public sealed interface JASourceOrBufferType
+  permits JASourceType, JABufferType
 {
-  /**
-   * Set the buffer data. The provided byte buffer must be a direct byte
-   * buffer.
-   *
-   * @param format    The audio format
-   * @param frequency The audio frequency in hz
-   * @param data      The data
-   *
-   * @throws JAException On errors
-   * @see ByteBuffer#isDirect()
-   */
 
-  void setData(
-    JABufferFormat format,
-    int frequency,
-    ByteBuffer data)
-    throws JAException;
 }

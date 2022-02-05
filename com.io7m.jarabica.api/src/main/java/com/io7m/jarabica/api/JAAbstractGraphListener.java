@@ -14,32 +14,55 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+
 package com.io7m.jarabica.api;
 
-import java.nio.ByteBuffer;
+import org.jgrapht.event.GraphEdgeChangeEvent;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.GraphVertexChangeEvent;
 
 /**
- * The type of buffer objects.
+ * An abstract, empty implementation of the graph listener interface.
+ *
+ * @param <V> The type of vertices
+ * @param <E> The type of edges
  */
 
-public non-sealed interface JABufferType
-  extends JAHandleType, JASourceOrBufferType
+public abstract class JAAbstractGraphListener<V, E>
+  implements GraphListener<V, E>
 {
-  /**
-   * Set the buffer data. The provided byte buffer must be a direct byte
-   * buffer.
-   *
-   * @param format    The audio format
-   * @param frequency The audio frequency in hz
-   * @param data      The data
-   *
-   * @throws JAException On errors
-   * @see ByteBuffer#isDirect()
-   */
+  @Override
+  public void edgeWeightUpdated(
+    final GraphEdgeChangeEvent<V, E> e)
+  {
 
-  void setData(
-    JABufferFormat format,
-    int frequency,
-    ByteBuffer data)
-    throws JAException;
+  }
+
+  @Override
+  public void edgeAdded(
+    final GraphEdgeChangeEvent<V, E> e)
+  {
+
+  }
+
+  @Override
+  public void edgeRemoved(
+    final GraphEdgeChangeEvent<V, E> e)
+  {
+
+  }
+
+  @Override
+  public void vertexAdded(
+    final GraphVertexChangeEvent<V> e)
+  {
+
+  }
+
+  @Override
+  public void vertexRemoved(
+    final GraphVertexChangeEvent<V> e)
+  {
+
+  }
 }

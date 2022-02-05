@@ -11,11 +11,11 @@
     <artifactId>com.io7m.jarabica</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>com.io7m.jarabica.tests</artifactId>
+  <artifactId>com.io7m.jarabica.demo</artifactId>
 
   <packaging>jar</packaging>
-  <name>com.io7m.jarabica.tests</name>
-  <description>Type-safe OpenAL frontend (Test suite)</description>
+  <name>com.io7m.jarabica.demo</name>
+  <description>Type-safe OpenAL frontend (Demo)</description>
   <url>https://www.io7m.com/software/jarabica/</url>
 
   <dependencies>
@@ -31,8 +31,29 @@
     </dependency>
 
     <dependency>
-      <groupId>com.io7m.jmulticlose</groupId>
-      <artifactId>com.io7m.jmulticlose.core</artifactId>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-graphics</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.io7m.jaffirm</groupId>
+      <artifactId>com.io7m.jaffirm.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jtensors</groupId>
+      <artifactId>com.io7m.jtensors.core</artifactId>
     </dependency>
 
     <dependency>
@@ -73,24 +94,16 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.ui</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-text</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.jqwik</groupId>
-      <artifactId>jqwik-engine</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.jqwik</groupId>
-      <artifactId>jqwik-api</artifactId>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.oxygen</artifactId>
     </dependency>
 
     <dependency>
@@ -104,15 +117,5 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <!-- Determine test coverage -->
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

@@ -329,6 +329,30 @@ public final class JALSource extends JALHandle implements JASourceType
     this.errorChecker.checkErrors("alSourcef");
   }
 
+  @Override
+  public void setLooping(
+    final boolean looping)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcei(
+      this.sourceHandle,
+      AL10.AL_LOOPING,
+      looping ? AL10.AL_TRUE : AL10.AL_FALSE
+    );
+    this.errorChecker.checkErrors("alSourcei");
+  }
+
+  @Override
+  public boolean looping()
+    throws JAException
+  {
+    final var i = AL10.alGetSourcei(this.sourceHandle, AL10.AL_LOOPING);
+    this.errorChecker.checkErrors("alGetSourcei");
+    return i == AL10.AL_TRUE;
+  }
+
   private void check()
     throws JAException
   {

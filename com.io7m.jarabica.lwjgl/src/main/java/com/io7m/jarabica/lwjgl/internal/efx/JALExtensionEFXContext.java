@@ -19,8 +19,12 @@ package com.io7m.jarabica.lwjgl.internal.efx;
 import com.io7m.jarabica.api.JACallException;
 import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JASourceType;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectEAXReverbParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectEAXReverbType;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoType;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectReverbParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectReverbType;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectType;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterHighPassParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterHighPassType;
@@ -40,6 +44,7 @@ import com.io7m.jarabica.lwjgl.internal.JALExtension;
 import com.io7m.jarabica.lwjgl.internal.JALSource;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.AsUnmodifiableGraph;
+import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -53,7 +58,9 @@ import static org.lwjgl.openal.EXTEfx.ALC_MAX_AUXILIARY_SENDS;
 import static org.lwjgl.openal.EXTEfx.AL_AUXILIARY_SEND_FILTER;
 import static org.lwjgl.openal.EXTEfx.AL_DIRECT_FILTER;
 import static org.lwjgl.openal.EXTEfx.AL_EFFECTSLOT_EFFECT;
+import static org.lwjgl.openal.EXTEfx.AL_EFFECT_EAXREVERB;
 import static org.lwjgl.openal.EXTEfx.AL_EFFECT_ECHO;
+import static org.lwjgl.openal.EXTEfx.AL_EFFECT_REVERB;
 import static org.lwjgl.openal.EXTEfx.AL_EFFECT_TYPE;
 import static org.lwjgl.openal.EXTEfx.AL_FILTER_HIGHPASS;
 import static org.lwjgl.openal.EXTEfx.AL_FILTER_LOWPASS;
@@ -75,7 +82,7 @@ public final class JALExtensionEFXContext
 {
   private final JALContext context;
   private final JALErrorChecker errorChecker;
-  private final DirectedAcyclicGraph<JAEFXGraphNodeType, JAEFXGraphEdgeType> signalGraph;
+  private final DefaultListenableGraph<JAEFXGraphNodeType, JAEFXGraphEdgeType> signalGraph;
   private final AsUnmodifiableGraph<JAEFXGraphNodeType, JAEFXGraphEdgeType> signalGraphRead;
 
   /**
@@ -94,7 +101,8 @@ public final class JALExtensionEFXContext
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.signalGraph =
-      new DirectedAcyclicGraph<>(JAEFXGraphEdgeType.class);
+      new DefaultListenableGraph<>(
+        new DirectedAcyclicGraph<>(JAEFXGraphEdgeType.class));
     this.signalGraphRead =
       new AsUnmodifiableGraph<>(this.signalGraph);
   }
@@ -134,6 +142,40 @@ public final class JALExtensionEFXContext
     this.signalGraph.addVertex(echo);
     echo.setParameters(parameters);
     return echo;
+  }
+
+  @Override
+  public JAEFXEffectReverbType createEffectReverb(
+    final JAEFXEffectReverbParameters parameters)
+    throws JAException
+  {
+    this.context.check();
+
+    final var effect = alGenEffects();
+    this.errorChecker.checkErrors("alGenEffects");
+    alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
+    this.errorChecker.checkErrors("alEffecti");
+    final var fx = new JALEFXReverb(this, parameters, effect);
+    this.signalGraph.addVertex(fx);
+    fx.setParameters(parameters);
+    return fx;
+  }
+
+  @Override
+  public JAEFXEffectEAXReverbType createEffectEAXReverb(
+    final JAEFXEffectEAXReverbParameters parameters)
+    throws JAException
+  {
+    this.context.check();
+
+    final var effect = alGenEffects();
+    this.errorChecker.checkErrors("alGenEffects");
+    alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+    this.errorChecker.checkErrors("alEffecti");
+    final var fx = new JALEFXEAXReverb(this, parameters, effect);
+    this.signalGraph.addVertex(fx);
+    fx.setParameters(parameters);
+    return fx;
   }
 
   @Override
@@ -244,7 +286,7 @@ public final class JALExtensionEFXContext
       AL_AUXILIARY_SEND_FILTER,
       (int) slot.handle(),
       0,
-      0
+      AL_FILTER_NULL
     );
     this.errorChecker.checkErrors("alSource3i");
 

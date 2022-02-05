@@ -16,6 +16,10 @@
 
 package com.io7m.jarabica.api;
 
+import org.jgrapht.Graph;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.VertexSetListener;
+
 import java.util.Optional;
 
 /**
@@ -108,4 +112,52 @@ public interface JAContextType extends JAHandleType
   String renderer()
     throws JAException;
 
+  /**
+   * @return A read-only view of the connections of sources and buffers
+   *
+   * @throws JAException On errors
+   */
+
+  Graph<JASourceOrBufferType, JASourceBufferLink> sourceBufferGraph()
+    throws JAException;
+
+  /**
+   * Adds the specified vertex set listener to the source/buffer graph, if not
+   * already present.
+   *
+   * @param l the listener to be added
+   */
+
+  void addSourceBufferGraphListener(
+    GraphListener<JASourceOrBufferType, JASourceBufferLink> l);
+
+  /**
+   * Adds the specified vertex set listener to the source/buffer graph, if not
+   * already present.
+   *
+   * @param l the listener to be added
+   */
+
+  void addSourceBufferVertexSetListener(
+    VertexSetListener<JASourceOrBufferType> l);
+
+  /**
+   * Removes the specified graph listener from the source/buffer graph, if
+   * present.
+   *
+   * @param l the listener to be removed
+   */
+
+  void removeSourceBufferGraphListener(
+    GraphListener<JASourceOrBufferType, JASourceBufferLink> l);
+
+  /**
+   * Removes the specified vertex set listener from the source/buffer graph, if
+   * present.
+   *
+   * @param l the listener to be removed
+   */
+
+  void removeSourceBufferVertexSetListener(
+    VertexSetListener<JASourceOrBufferType> l);
 }

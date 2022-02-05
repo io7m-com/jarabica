@@ -23,7 +23,14 @@ import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAExtensionContextType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.api.JASourceBufferLink;
+import com.io7m.jarabica.api.JASourceOrBufferType;
 import com.io7m.jarabica.api.JASourceType;
+import org.jgrapht.Graph;
+import org.jgrapht.event.GraphListener;
+import org.jgrapht.event.VertexSetListener;
+import org.jgrapht.graph.AsUnmodifiableGraph;
+import org.jgrapht.graph.DefaultListenableGraph;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.ALC10;
@@ -57,7 +64,8 @@ public final class JALContext extends JALHandle implements JAContextType
   private final JALListener listener;
   private final JALExtensionRegistry extensions;
   private final HashSet<JALExtension> extensionsCreated;
-  private final DirectedAcyclicGraph<JALHandle, JALSourceBufferLink> sourcesToBuffers;
+  private final DefaultListenableGraph<JASourceOrBufferType, JASourceBufferLink> sourcesToBuffers;
+  private final AsUnmodifiableGraph<JASourceOrBufferType, JASourceBufferLink> sourcesToBuffersRead;
 
   JALContext(
     final JALDevice inDevice,
@@ -90,16 +98,19 @@ public final class JALContext extends JALHandle implements JAContextType
     this.extensionsCreated =
       new HashSet<JALExtension>();
     this.sourcesToBuffers =
-      new DirectedAcyclicGraph<>(JALSourceBufferLink.class);
+      new DefaultListenableGraph<>(
+        new DirectedAcyclicGraph<>(JASourceBufferLink.class));
+    this.sourcesToBuffersRead =
+      new AsUnmodifiableGraph<>(this.sourcesToBuffers);
 
     this.listener =
       new JALListener(this, this.stack, this.strings, this.errorChecker);
   }
 
-  Set<JALSourceBufferLink> sourcesUsingBuffer(
+  Set<JASourceBufferLink> sourcesUsingBuffer(
     final JALBuffer buffer)
   {
-    return this.sourcesToBuffers.incomingEdgesOf(buffer);
+    return this.sourcesToBuffers.outgoingEdgesOf(buffer);
   }
 
   @Override
@@ -246,6 +257,46 @@ public final class JALContext extends JALHandle implements JAContextType
     return text;
   }
 
+  @Override
+  public Graph<JASourceOrBufferType, JASourceBufferLink> sourceBufferGraph()
+    throws JAException
+  {
+    this.check();
+    return this.sourcesToBuffersRead;
+  }
+
+  @Override
+  public void addSourceBufferGraphListener(
+    final GraphListener<JASourceOrBufferType, JASourceBufferLink> l)
+  {
+    this.sourcesToBuffers.addGraphListener(
+      Objects.requireNonNull(l, "l"));
+  }
+
+  @Override
+  public void addSourceBufferVertexSetListener(
+    final VertexSetListener<JASourceOrBufferType> l)
+  {
+    this.sourcesToBuffers.addVertexSetListener(
+      Objects.requireNonNull(l, "l"));
+  }
+
+  @Override
+  public void removeSourceBufferGraphListener(
+    final GraphListener<JASourceOrBufferType, JASourceBufferLink> l)
+  {
+    this.sourcesToBuffers.removeGraphListener(
+      Objects.requireNonNull(l, "l"));
+  }
+
+  @Override
+  public void removeSourceBufferVertexSetListener(
+    final VertexSetListener<JASourceOrBufferType> l)
+  {
+    this.sourcesToBuffers.removeVertexSetListener(
+      Objects.requireNonNull(l, "l"));
+  }
+
   /**
    * Check that this context is current and not closed.
    *
@@ -332,16 +383,16 @@ public final class JALContext extends JALHandle implements JAContextType
     }
 
     this.sourcesToBuffers.addEdge(
-      source,
       buffer,
-      new JALSourceBufferLink(source, buffer));
+      source,
+      new JASourceBufferLink(buffer, source));
   }
 
   void onSourceUnsetBuffer(
     final JALSource source)
   {
     final var edges =
-      Set.copyOf(this.sourcesToBuffers.outgoingEdgesOf(source));
+      Set.copyOf(this.sourcesToBuffers.incomingEdgesOf(source));
 
     for (final var edge : edges) {
       if (LOG.isTraceEnabled()) {
@@ -355,7 +406,7 @@ public final class JALContext extends JALHandle implements JAContextType
     final JALSource source)
   {
     final var edges =
-      this.sourcesToBuffers.outgoingEdgesOf(source);
+      this.sourcesToBuffers.incomingEdgesOf(source);
 
     for (final var edge : edges) {
       return Optional.of(edge.buffer());

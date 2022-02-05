@@ -22,7 +22,9 @@ import com.io7m.jarabica.api.JADeviceFactoryType;
 import com.io7m.jarabica.api.JAListenerType;
 import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectEAXReverbParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXEffectEchoParameters;
+import com.io7m.jarabica.extensions.efx.JAEFXEffectReverbParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterHighPassParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXFilterLowPassParameters;
 import com.io7m.jarabica.extensions.efx.JAEFXSourceNode;
@@ -736,6 +738,104 @@ public abstract class JAContract
 
     final var effect =
       this.resources.add(efx.createEffectEcho(parameters));
+
+    assertEquals(parameters, effect.parameters());
+  }
+
+  /**
+   * Creating effects works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffects1()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var parameters =
+      new JAEFXEffectReverbParameters(
+        1.0,
+        1.0,
+        0.32,
+        0.89,
+        1.49,
+        0.83,
+        0.05,
+        0.007,
+        1.26,
+        0.011,
+        0.994,
+        0.0,
+        true
+      );
+
+    final var effect =
+      this.resources.add(efx.createEffectReverb(parameters));
+
+    assertEquals(parameters, effect.parameters());
+  }
+
+  /**
+   * Creating effects works.
+   *
+   * @throws Exception On errors
+   */
+
+  @Test
+  public final void testEFXEffects2()
+    throws Exception
+  {
+    final var device =
+      this.resources.add(this.devices.openDevice(this.deviceDescriptions.get(0)));
+
+    Assumptions.assumeTrue(device.extensions().contains("ALC_EXT_EFX"));
+
+    final var context =
+      this.resources.add(device.createContext());
+
+    final var efx =
+      context.extension(JAEFXType.class)
+        .orElseThrow();
+
+    final var parameters =
+      new JAEFXEffectEAXReverbParameters(
+        1.0,
+        1.0,
+        0.32,
+        0.89,
+        0.0,
+        1.49,
+        0.83,
+        1.0,
+        0.05,
+        0.007,
+        1.26,
+        0.011,
+        0.25,
+        0.0,
+        0.25,
+        0.0,
+        0.994,
+        5000.0,
+        250.0,
+        0.0,
+        true
+      );
+
+    final var effect =
+      this.resources.add(efx.createEffectEAXReverb(parameters));
 
     assertEquals(parameters, effect.parameters());
   }

@@ -14,32 +14,46 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-package com.io7m.jarabica.api;
 
-import java.nio.ByteBuffer;
+package com.io7m.jarabica.demo;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 /**
- * The type of buffer objects.
+ * The main application.
  */
 
-public non-sealed interface JABufferType
-  extends JAHandleType, JASourceOrBufferType
+public final class MainApplication extends Application
 {
   /**
-   * Set the buffer data. The provided byte buffer must be a direct byte
-   * buffer.
-   *
-   * @param format    The audio format
-   * @param frequency The audio frequency in hz
-   * @param data      The data
-   *
-   * @throws JAException On errors
-   * @see ByteBuffer#isDirect()
+   * The main application.
    */
 
-  void setData(
-    JABufferFormat format,
-    int frequency,
-    ByteBuffer data)
-    throws JAException;
+  public MainApplication()
+  {
+
+  }
+
+  @Override
+  public void start(final Stage stage)
+    throws Exception
+  {
+    final var mainXML =
+      MainApplication.class.getResource("mainWindow.fxml");
+    final var loader =
+      new FXMLLoader(mainXML);
+
+    final AnchorPane pane = loader.load();
+    final var controller = (MainController) loader.getController();
+
+    stage.setTitle("jarabica");
+    stage.setMinWidth(1024.0);
+    stage.setMinHeight(768.0);
+    stage.setScene(new Scene(pane));
+    stage.show();
+  }
 }

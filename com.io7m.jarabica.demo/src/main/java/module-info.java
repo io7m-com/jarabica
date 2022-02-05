@@ -14,18 +14,25 @@
  * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/**
+ * Type-safe OpenAL frontend (Demo application).
+ */
 
-package com.io7m.jarabica.lwjgl.internal;
-
-import java.util.Objects;
-
-record JALSourceBufferLink(
-  JALSource source,
-  JALBuffer buffer)
+open module com.io7m.jarabica.demo
 {
-  public JALSourceBufferLink
-  {
-    Objects.requireNonNull(source, "source");
-    Objects.requireNonNull(buffer, "buffer");
-  }
+  requires static org.osgi.annotation.bundle;
+  requires static org.osgi.annotation.versioning;
+
+  requires com.io7m.jarabica.api;
+  requires com.io7m.jarabica.extensions.efx;
+  requires com.io7m.jarabica.lwjgl;
+  requires com.io7m.jwheatsheaf.api;
+  requires com.io7m.jwheatsheaf.ui;
+
+  requires java.desktop;
+  requires javafx.controls;
+  requires javafx.fxml;
+  requires org.slf4j;
+
+  exports com.io7m.jarabica.demo;
 }

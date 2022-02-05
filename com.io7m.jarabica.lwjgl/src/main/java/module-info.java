@@ -36,6 +36,8 @@ module com.io7m.jarabica.lwjgl
   requires transitive com.io7m.jarabica.api;
   requires transitive com.io7m.jarabica.extensions.efx;
 
+  opens com.io7m.jarabica.lwjgl.internal to com.io7m.jxtrand.vanilla;
+
   uses JALExtensionFactoryType;
 
   exports com.io7m.jarabica.lwjgl;

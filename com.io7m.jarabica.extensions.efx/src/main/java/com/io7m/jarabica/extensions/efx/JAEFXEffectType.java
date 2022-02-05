@@ -26,7 +26,9 @@ import com.io7m.jarabica.api.JAHandleType;
  */
 
 public sealed interface JAEFXEffectType<P>
-  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEchoType
+  extends JAHandleType, JAEFXGraphNodeType permits JAEFXEffectEAXReverbType,
+  JAEFXEffectEchoType,
+  JAEFXEffectReverbType
 {
   /**
    * @return The current effect parameters
