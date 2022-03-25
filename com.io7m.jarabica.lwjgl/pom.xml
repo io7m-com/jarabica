@@ -31,8 +31,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.io7m.jaffirm</groupId>
-      <artifactId>com.io7m.jaffirm.core</artifactId>
+      <groupId>com.io7m.jtensors</groupId>
+      <artifactId>com.io7m.jtensors.core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.io7m.jxtrand</groupId>
