@@ -35,7 +35,7 @@
     <com.io7m.xstructural.version>1.8.0</com.io7m.xstructural.version>
     <io7m.api.previousVersion>0.0.1-SNAPSHOT</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>21</io7m.java.targetJavaVersion>
-    <javafx.version>21.0.1</javafx.version>
+    <javafx.version>21.0.3</javafx.version>
     <jqwik.version>1.8.2</jqwik.version>
     <junit.version>5.10.1</junit.version>
     <lwjgl.version>3.3.3</lwjgl.version>
