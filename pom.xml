@@ -18,7 +18,7 @@
   <packaging>pom</packaging>
   <name>com.io7m.jarabica</name>
   <description>Type-safe OpenAL frontend</description>
-  <url>https://www.github.com/io7m/jarabica</url>
+  <url>https://www.io7m.com/software/jarabica</url>
 
   <modules>
     <module>com.io7m.jarabica.api</module>
@@ -50,9 +50,9 @@
   </licenses>
 
   <scm>
-    <url>https://www.github.com/io7m/jarabica</url>
-    <connection>scm:git:https://github.com/io7m/jarabica</connection>
-    <developerConnection>scm:git:https://github.com/io7m/jarabica</developerConnection>
+    <url>https://www.github.com/io7m-com/jarabica</url>
+    <connection>scm:git:https://www.github.com/io7m-com/jarabica</connection>
+    <developerConnection>scm:git:https://www.github.com/io7m-com/jarabica</developerConnection>
   </scm>
 
   <developers>
@@ -65,7 +65,7 @@
   </developers>
 
   <issueManagement>
-    <url>https://www.github.com/io7m/jarabica/issues</url>
+    <url>https://www.github.com/io7m-com/jarabica/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
@@ -87,7 +87,7 @@
 
   <ciManagement>
     <system>GitHub Actions</system>
-    <url>https://github.com/jarabica/actions</url>
+    <url>https://www.github.com/io7m-com/jarabica/actions</url>
   </ciManagement>
 
   <prerequisites>
