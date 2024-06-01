@@ -2,8 +2,5 @@
 
 <div xmlns="http://www.w3.org/1999/xhtml">
   <h3>User documentation</h3>
-  <h4>JavaDoc</h4>
-  <p>
-    <a href="documentation/apidocs/index.html">API documentation</a>
-  </p>
+  <p>See the <a href="https://www.github.com/io7m-com/jarabica/">README</a> for documentation.</p>
 </div>

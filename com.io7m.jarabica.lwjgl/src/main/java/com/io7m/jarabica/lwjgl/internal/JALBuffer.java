@@ -21,17 +21,17 @@ import com.io7m.jarabica.api.JABufferFormat;
 import com.io7m.jarabica.api.JABufferType;
 import com.io7m.jarabica.api.JAException;
 import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.api.JASourceBufferLink;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
-final class JALBuffer implements JABufferType
+final class JALBuffer extends JALHandle implements JABufferType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALBuffer.class);
@@ -41,8 +41,6 @@ final class JALBuffer implements JABufferType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int bufferHandle;
-  private final AtomicBoolean closed;
-  private final HashSet<JALSource> attachedSources;
 
   JALBuffer(
     final JALContext inContext,
@@ -51,6 +49,8 @@ final class JALBuffer implements JABufferType
     final JALErrorChecker inErrorChecker,
     final int inSourceHandle)
   {
+    super("buffer", inSourceHandle, inStrings);
+
     this.context =
       Objects.requireNonNull(inContext, "context");
     this.stack =
@@ -60,10 +60,6 @@ final class JALBuffer implements JABufferType
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.bufferHandle = inSourceHandle;
-    this.attachedSources =
-      new HashSet<>();
-    this.closed =
-      new AtomicBoolean(false);
   }
 
   private static int alFormatOf(
@@ -78,30 +74,32 @@ final class JALBuffer implements JABufferType
   }
 
   @Override
-  public void close()
-    throws JAException
+  protected Logger logger()
   {
-    if (this.attachedSources.isEmpty()) {
-      if (this.closed.compareAndSet(false, true)) {
-        AL10.alDeleteBuffers(this.bufferHandle);
-        this.errorChecker.checkErrors("alDeleteBuffers");
-
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("closed buffer: {}", this);
-        }
-      }
-    } else {
-      throw new JAMisuseException(
-        this.strings.format(
-          "errorBufferDeleteSources", this, this.attachedSources)
-      );
-    }
+    return LOG;
   }
 
   @Override
-  public boolean isClosed()
+  protected void closeActual()
+    throws JAException
   {
-    return this.closed.get();
+    final var sourcesUsingBuffer =
+      this.context.sourcesUsingBuffer(this);
+
+    if (!sourcesUsingBuffer.isEmpty()) {
+      throw new JAMisuseException(
+        this.strings.format(
+          "errorBufferDeleteSources",
+          this,
+          sourcesUsingBuffer.stream()
+            .map(JASourceBufferLink::source)
+            .collect(Collectors.toList()))
+      );
+    }
+
+    AL10.alDeleteBuffers(this.bufferHandle);
+    this.errorChecker.checkErrors("alDeleteBuffers");
+    this.context.onBufferDeleted(this);
   }
 
   @Override
@@ -109,7 +107,7 @@ final class JALBuffer implements JABufferType
   {
     return new StringBuilder(64)
       .append("[JALBuffer ")
-      .append(Integer.toUnsignedString(this.bufferHandle))
+      .append(this.handleString())
       .append("]")
       .toString();
   }
@@ -117,7 +115,7 @@ final class JALBuffer implements JABufferType
   void check()
     throws JAException
   {
-    if (this.closed.get()) {
+    if (this.isClosed()) {
       throw new JAMisuseException(
         this.strings.format("errorClosed", this));
     }
@@ -148,22 +146,5 @@ final class JALBuffer implements JABufferType
       frequency
     );
     this.errorChecker.checkErrors("alBufferData");
-  }
-
-  int handle()
-  {
-    return this.bufferHandle;
-  }
-
-  void addSource(
-    final JALSource source)
-  {
-    this.attachedSources.add(source);
-  }
-
-  void removeSource(
-    final JALSource source)
-  {
-    this.attachedSources.remove(source);
   }
 }

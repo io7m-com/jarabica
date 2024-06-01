@@ -19,7 +19,6 @@ package com.io7m.jarabica.lwjgl.internal;
 
 import com.io7m.jarabica.api.JABufferType;
 import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAMisuseException;
 import com.io7m.jarabica.api.JASourceState;
 import com.io7m.jarabica.api.JASourceType;
 import com.io7m.jtensors.core.unparameterized.vectors.Vector3D;
@@ -30,14 +29,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_INITIAL;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PAUSED;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_PLAYING;
 import static com.io7m.jarabica.api.JASourceState.SOURCE_STATE_STOPPED;
 
-final class JALSource implements JASourceType
+/**
+ * A source.
+ */
+
+public final class JALSource extends JALHandle implements JASourceType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALSource.class);
@@ -47,8 +49,6 @@ final class JALSource implements JASourceType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final int sourceHandle;
-  private final AtomicBoolean closed;
-  private JALBuffer currentBuffer;
 
   JALSource(
     final JALContext inContext,
@@ -57,6 +57,8 @@ final class JALSource implements JASourceType
     final JALErrorChecker inErrorChecker,
     final int inSourceHandle)
   {
+    super("source", inSourceHandle, inStrings);
+
     this.context =
       Objects.requireNonNull(inContext, "context");
     this.stack =
@@ -66,27 +68,33 @@ final class JALSource implements JASourceType
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.sourceHandle = inSourceHandle;
-    this.closed = new AtomicBoolean(false);
+  }
+
+  private static JASourceState toSourceState(
+    final int x)
+  {
+    return switch (x) {
+      case AL10.AL_PLAYING -> SOURCE_STATE_PLAYING;
+      case AL10.AL_PAUSED -> SOURCE_STATE_PAUSED;
+      case AL10.AL_STOPPED -> SOURCE_STATE_STOPPED;
+      case AL10.AL_INITIAL -> SOURCE_STATE_INITIAL;
+      default -> throw new IllegalStateException("Unrecognized state value: " + x);
+    };
   }
 
   @Override
-  public void close()
+  protected Logger logger()
+  {
+    return LOG;
+  }
+
+  @Override
+  protected void closeActual()
     throws JAException
   {
-    if (this.closed.compareAndSet(false, true)) {
-      AL10.alDeleteSources(this.sourceHandle);
-      this.errorChecker.checkErrors("alDeleteSources");
-
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("closed source: {}", this);
-      }
-    }
-  }
-
-  @Override
-  public boolean isClosed()
-  {
-    return this.closed.get();
+    AL10.alDeleteSources(this.sourceHandle);
+    this.errorChecker.checkErrors("alDeleteSources");
+    this.context.onSourceDeleted(this);
   }
 
   @Override
@@ -94,7 +102,7 @@ final class JALSource implements JASourceType
   {
     return new StringBuilder(64)
       .append("[JALSource ")
-      .append(Integer.toUnsignedString(this.sourceHandle))
+      .append(this.handleString())
       .append("]")
       .toString();
   }
@@ -229,10 +237,9 @@ final class JALSource implements JASourceType
     final var jalBuffer = (JALBuffer) buffer;
     jalBuffer.check();
 
-    AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, jalBuffer.handle());
+    AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, (int) jalBuffer.handle());
     this.errorChecker.checkErrors("alSourcei");
-    jalBuffer.addSource(this);
-    this.currentBuffer = jalBuffer;
+    this.context.onSourceSetBuffer(this, jalBuffer);
   }
 
   @Override
@@ -243,14 +250,13 @@ final class JALSource implements JASourceType
 
     AL10.alSourcei(this.sourceHandle, AL10.AL_BUFFER, AL10.AL_NONE);
     this.errorChecker.checkErrors("alSourcei");
-    this.currentBuffer.removeSource(this);
-    this.currentBuffer = null;
+    this.context.onSourceUnsetBuffer(this);
   }
 
   @Override
   public Optional<JABufferType> buffer()
   {
-    return Optional.ofNullable(this.currentBuffer);
+    return this.context.onSourceWantBuffer(this);
   }
 
   @Override
@@ -267,26 +273,90 @@ final class JALSource implements JASourceType
     }
   }
 
-  private static JASourceState toSourceState(
-    final int x)
+  @Override
+  public double gain()
+    throws JAException
   {
-    return switch (x) {
-      case AL10.AL_PLAYING -> SOURCE_STATE_PLAYING;
-      case AL10.AL_PAUSED -> SOURCE_STATE_PAUSED;
-      case AL10.AL_STOPPED -> SOURCE_STATE_STOPPED;
-      case AL10.AL_INITIAL -> SOURCE_STATE_INITIAL;
-      default -> throw new IllegalStateException("Unrecognized state value: " + x);
-    };
+    this.check();
+
+    final var r = AL10.alGetSourcef(
+      this.sourceHandle,
+      AL10.AL_GAIN
+    );
+    this.errorChecker.checkErrors("alGetSourcef");
+    return r;
+  }
+
+  @Override
+  public void setGain(
+    final double m)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcef(
+      this.sourceHandle,
+      AL10.AL_GAIN,
+      (float) m
+    );
+    this.errorChecker.checkErrors("alSourcef");
+  }
+
+  @Override
+  public double pitch()
+    throws JAException
+  {
+    final var r = AL10.alGetSourcef(
+      this.sourceHandle,
+      AL10.AL_PITCH
+    );
+    this.errorChecker.checkErrors("alGetSourcef");
+    return r;
+  }
+
+  @Override
+  public void setPitch(
+    final double m)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcef(
+      this.sourceHandle,
+      AL10.AL_PITCH,
+      (float) m
+    );
+    this.errorChecker.checkErrors("alSourcef");
+  }
+
+  @Override
+  public void setLooping(
+    final boolean looping)
+    throws JAException
+  {
+    this.check();
+
+    AL10.alSourcei(
+      this.sourceHandle,
+      AL10.AL_LOOPING,
+      looping ? AL10.AL_TRUE : AL10.AL_FALSE
+    );
+    this.errorChecker.checkErrors("alSourcei");
+  }
+
+  @Override
+  public boolean looping()
+    throws JAException
+  {
+    final var i = AL10.alGetSourcei(this.sourceHandle, AL10.AL_LOOPING);
+    this.errorChecker.checkErrors("alGetSourcei");
+    return i == AL10.AL_TRUE;
   }
 
   private void check()
     throws JAException
   {
-    if (this.closed.get()) {
-      throw new JAMisuseException(
-        this.strings.format("errorClosed", this));
-    }
-
+    this.checkNotClosed();
     this.context.checkCurrent(this, this.context);
   }
 }

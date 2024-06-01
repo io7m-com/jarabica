@@ -25,7 +25,8 @@ import java.util.Optional;
  * The type of sources.
  */
 
-public interface JASourceType extends JAHandleType
+public non-sealed interface JASourceType
+  extends JAHandleType, JASourceOrBufferType
 {
   /**
    * @return {@code true} if the source is playing
@@ -221,6 +222,68 @@ public interface JASourceType extends JAHandleType
    */
 
   JASourceState state()
+    throws JAException;
+
+  /**
+   * @return The source's gain
+   *
+   * @throws JAException On errors
+   */
+
+  double gain()
+    throws JAException;
+
+  /**
+   * Set the source's gain.
+   *
+   * @param m The scalar gain multiplier
+   *
+   * @throws JAException On errors
+   */
+
+  void setGain(
+    double m)
+    throws JAException;
+
+  /**
+   * @return The source's pitch
+   *
+   * @throws JAException On errors
+   */
+
+  double pitch()
+    throws JAException;
+
+  /**
+   * Set the source's pitch.
+   *
+   * @param m The scalar pitch multiplier
+   *
+   * @throws JAException On errors
+   */
+
+  void setPitch(
+    double m)
+    throws JAException;
+
+  /**
+   * Set the source to looping (or not looping).
+   *
+   * @param looping {@code true} if the source should loop
+   *
+   * @throws JAException On errors
+   */
+
+  void setLooping(boolean looping)
+    throws JAException;
+
+  /**
+   * @return {@code true} if the source is looping
+   *
+   * @throws JAException On errors
+   */
+
+  boolean looping()
     throws JAException;
 }
 

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.io7m.jarabica</groupId>
+    <artifactId>com.io7m.jarabica</artifactId>
+    <version>1.0.0</version>
+  </parent>
+  <artifactId>com.io7m.jarabica.demo</artifactId>
+
+  <packaging>jar</packaging>
+  <name>com.io7m.jarabica.demo</name>
+  <description>Type-safe OpenAL frontend (Demo)</description>
+  <url>https://www.io7m.com/software/jarabica/</url>
+
+  <properties>
+    <mdep.analyze.skip>true</mdep.analyze.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.jarabica.api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.jarabica.lwjgl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-graphics</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.io7m.jaffirm</groupId>
+      <artifactId>com.io7m.jaffirm.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jtensors</groupId>
+      <artifactId>com.io7m.jtensors.core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-openal</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.ui</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.io7m.jwheatsheaf</groupId>
+      <artifactId>com.io7m.jwheatsheaf.oxygen</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.bundle</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.versioning</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- Use platform-specific natives. -->
+  <profiles>
+    <profile>
+      <id>lwjgl-windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>lwjgl-linux</id>
+      <activation>
+        <os>
+          <family>Linux</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
+</project>

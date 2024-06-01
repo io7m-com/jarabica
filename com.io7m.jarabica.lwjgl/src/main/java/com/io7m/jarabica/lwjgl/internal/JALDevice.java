@@ -16,29 +16,34 @@
 
 package com.io7m.jarabica.lwjgl.internal;
 
-import com.io7m.jarabica.api.JACallException;
 import com.io7m.jarabica.api.JAContextType;
 import com.io7m.jarabica.api.JADeviceException;
 import com.io7m.jarabica.api.JADeviceType;
 import com.io7m.jarabica.api.JAException;
-import com.io7m.jarabica.api.JAMisuseException;
+import com.io7m.jarabica.api.JAExtensionConfigurationType;
+import com.io7m.jarabica.extensions.efx.JAEFXConfiguration;
+import com.io7m.jarabica.extensions.efx.JAEFXType;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC10;
+import org.lwjgl.openal.EXTEfx;
 import org.lwjgl.system.MemoryStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.IntBuffer;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * An open device.
  */
 
-public final class JALDevice implements JADeviceType
+public final class JALDevice extends JALHandle implements JADeviceType
 {
   private static final Logger LOG =
     LoggerFactory.getLogger(JALDevice.class);
@@ -46,16 +51,16 @@ public final class JALDevice implements JADeviceType
   private final JALStrings strings;
   private final JALErrorChecker errorChecker;
   private final long handle;
-  private final AtomicBoolean closed;
   private final MemoryStack stack;
   private final HashMap<Long, JALContext> contexts;
   private JALContext contextCurrent;
+  private SortedSet<String> extensions;
 
   /**
    * An open device.
    *
-   * @param inErrorChecker An error checker
    * @param inStrings      A string provider
+   * @param inErrorChecker An error checker
    * @param inHandle       The device handle
    */
 
@@ -64,114 +69,162 @@ public final class JALDevice implements JADeviceType
     final JALErrorChecker inErrorChecker,
     final long inHandle)
   {
+    super("device", inHandle, inStrings);
+
     this.strings =
       Objects.requireNonNull(inStrings, "inStrings");
     this.errorChecker =
       Objects.requireNonNull(inErrorChecker, "errorChecker");
     this.handle = inHandle;
-    this.closed =
-      new AtomicBoolean(false);
     this.stack =
       MemoryStack.create()
         .push();
 
-    this.contexts = new HashMap<Long, JALContext>();
+    this.contexts = new HashMap<>();
     this.contextCurrent = null;
   }
 
   @Override
-  public void close()
-    throws JAException
+  protected Logger logger()
   {
-    if (this.closed.compareAndSet(false, true)) {
-      this.stack.close();
-
-      final var ok = ALC10.alcCloseDevice(this.handle);
-      if (!ok) {
-        throw new JADeviceException(
-          this.strings.format("errorDeviceClose"));
-      }
-
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("closed device: {}", this);
-      }
-    }
+    return LOG;
   }
 
   @Override
-  public boolean isClosed()
+  protected void closeActual()
+    throws JAException
   {
-    return this.closed.get();
+    this.stack.close();
+
+    final var ok = ALC10.alcCloseDevice(this.handle);
+    if (!ok) {
+      throw new JADeviceException(
+        this.strings.format("errorDeviceClose"));
+    }
   }
 
   @Override
   public String toString()
   {
     return new StringBuilder(64)
-      .append("[JALDevice 0x")
-      .append(Long.toUnsignedString(this.handle, 16))
+      .append("[JALDevice ")
+      .append(this.handleString())
       .append("]")
       .toString();
   }
 
   @Override
-  public JAContextType createContext()
+  public JAContextType createContext(
+    final List<JAExtensionConfigurationType> extensionConfigurations)
+    throws JAException
+  {
+    this.check();
+    return this.contextCreate(extensionConfigurations);
+  }
+
+  private void check()
+    throws JAException
+  {
+    this.checkNotClosed();
+  }
+
+  @Override
+  public SortedSet<String> extensions()
     throws JAException
   {
     this.check();
 
-    return this.contextCreate();
-  }
-
-  private JALContext contextCreate()
-    throws JADeviceException, JACallException
-  {
-    final var contextHandle =
-      ALC10.alcCreateContext(this.handle, (IntBuffer) null);
-
-    if (contextHandle == 0L) {
-      throw new JADeviceException(
-        this.strings.format(
-          "errorContextCreate",
-          Long.toUnsignedString(this.handle, 16))
-      );
+    if (this.extensions == null) {
+      final var text =
+        ALC10.alcGetString(this.handle, ALC10.ALC_EXTENSIONS);
+      this.extensions =
+        Collections.unmodifiableSortedSet(
+          new TreeSet<>(List.of(text.split("\s+")))
+        );
     }
 
-    ALC10.alcMakeContextCurrent(contextHandle);
-
-    final var alcCapabilities =
-      ALC.createCapabilities(this.handle);
-    final var alCapabilities =
-      AL.createCapabilities(alcCapabilities);
-
-    final var context =
-      new JALContext(
-        this,
-        this.stack,
-        this.strings,
-        this.errorChecker,
-        contextHandle,
-        alcCapabilities,
-        alCapabilities
-      );
-
-    this.errorChecker.checkErrors("alcMakeContextCurrent");
-
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("created context: {}", context);
-    }
-
-    this.contexts.put(Long.valueOf(contextHandle), context);
-    this.contextCurrent = context;
-    return context;
+    return this.extensions;
   }
 
-  private void check()
-    throws JAMisuseException
+  @Override
+  public int versionMajor()
+    throws JAException
   {
-    if (this.closed.get()) {
-      throw new JAMisuseException(
-        this.strings.format("errorClosed", this));
+    this.check();
+    return ALC10.alcGetInteger(this.handle, ALC10.ALC_MAJOR_VERSION);
+  }
+
+  @Override
+  public int versionMinor()
+    throws JAException
+  {
+    this.check();
+    return ALC10.alcGetInteger(this.handle, ALC10.ALC_MINOR_VERSION);
+  }
+
+  private JALContext contextCreate(
+    final List<JAExtensionConfigurationType> extensionConfigurations)
+    throws JAException
+  {
+    try (var current = this.stack.push()) {
+      final var exts =
+        this.extensions();
+      final var extensionRegistry =
+        JALExtensionRegistry.createFromServiceLoader(exts);
+
+      IntBuffer attributes = null;
+      for (final var config : extensionConfigurations) {
+        if (config instanceof JAEFXConfiguration efxConfig) {
+          if (exts.contains(JAEFXType.NAME)) {
+            attributes = current.mallocInt(4);
+            attributes.put(0, EXTEfx.ALC_MAX_AUXILIARY_SENDS);
+            attributes.put(1, efxConfig.maxAuxiliarySends());
+            attributes.put(2, 0);
+            attributes.put(3, 0);
+          }
+        }
+      }
+
+      final var contextHandle =
+        ALC10.alcCreateContext(this.handle, attributes);
+
+      if (contextHandle == 0L) {
+        throw new JADeviceException(
+          this.strings.format(
+            "errorContextCreate",
+            Long.toUnsignedString(this.handle, 16))
+        );
+      }
+
+      ALC10.alcMakeContextCurrent(contextHandle);
+
+      final var alcCapabilities =
+        ALC.createCapabilities(this.handle);
+      final var alCapabilities =
+        AL.createCapabilities(alcCapabilities);
+
+
+      final var context =
+        new JALContext(
+          this,
+          this.stack,
+          this.strings,
+          this.errorChecker,
+          contextHandle,
+          alcCapabilities,
+          alCapabilities,
+          extensionRegistry
+        );
+
+      this.errorChecker.checkErrors("alcMakeContextCurrent");
+
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("created context: {}", context);
+      }
+
+      this.contexts.put(Long.valueOf(contextHandle), context);
+      this.contextCurrent = context;
+      return context;
     }
   }
 

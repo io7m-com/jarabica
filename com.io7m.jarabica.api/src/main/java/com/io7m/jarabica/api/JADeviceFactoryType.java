@@ -41,6 +41,7 @@ public interface JADeviceFactoryType
    * @throws JAException On errors
    */
 
-  JADeviceType openDevice(JADeviceDescription device)
+  JADeviceType openDevice(
+    JADeviceDescription device)
     throws JAException;
 }

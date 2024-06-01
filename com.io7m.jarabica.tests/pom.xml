@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.io7m.jarabica</groupId>
     <artifactId>com.io7m.jarabica</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <artifactId>com.io7m.jarabica.tests</artifactId>
 
@@ -17,6 +17,13 @@
   <name>com.io7m.jarabica.tests</name>
   <description>Type-safe OpenAL frontend (Test suite)</description>
   <url>https://www.io7m.com/software/jarabica/</url>
+
+  <properties>
+    <bnd.baseline.skip>true</bnd.baseline.skip>
+    <checkstyle.skip>true</checkstyle.skip>
+    <mdep.analyze.skip>true</mdep.analyze.skip>
+    <spotbugs.skip>true</spotbugs.skip>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -36,12 +43,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.lwjgl.osgi</groupId>
-      <artifactId>org.lwjgl.openal</artifactId>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.lwjgl.osgi</groupId>
-      <artifactId>org.lwjgl.jemalloc</artifactId>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-openal</artifactId>
     </dependency>
 
     <dependency>
@@ -53,12 +60,37 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jqwik</groupId>
+      <artifactId>jqwik-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jqwik</groupId>
+      <artifactId>jqwik-api</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
     </dependency>
 
     <dependency>
@@ -82,5 +114,49 @@
       </plugin>
     </plugins>
   </build>
+
+  <!-- Use platform-specific natives. -->
+  <profiles>
+    <profile>
+      <id>lwjgl-windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>lwjgl-linux</id>
+      <activation>
+        <os>
+          <family>Linux</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
 </project>

@@ -16,6 +16,8 @@
 
 import com.io7m.jarabica.api.JADeviceFactoryType;
 import com.io7m.jarabica.lwjgl.JALWDeviceFactory;
+import com.io7m.jarabica.lwjgl.internal.efx.JALExtensionEFX;
+import com.io7m.jarabica.lwjgl.internal.JALExtensionFactoryType;
 
 /**
  * Type-safe OpenAL frontend (LWJGL implementation).
@@ -26,14 +28,24 @@ module com.io7m.jarabica.lwjgl
   requires static org.osgi.annotation.bundle;
   requires static org.osgi.annotation.versioning;
 
-  requires org.lwjgl.openal;
+  requires com.io7m.jarabica.api;
+  requires com.io7m.jarabica.extensions.efx;
+
+  requires com.io7m.jtensors.core;
   requires com.io7m.jxtrand.vanilla;
+  requires org.jgrapht.core;
+  requires org.lwjgl.openal;
   requires org.slf4j;
 
-  requires transitive com.io7m.jarabica.api;
+  opens com.io7m.jarabica.lwjgl.internal
+    to com.io7m.jxtrand.vanilla;
+
+  uses JALExtensionFactoryType;
 
   exports com.io7m.jarabica.lwjgl;
 
   provides JADeviceFactoryType
     with JALWDeviceFactory;
+  provides JALExtensionFactoryType
+    with JALExtensionEFX;
 }

@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.io7m.jarabica</groupId>
     <artifactId>com.io7m.jarabica</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <artifactId>com.io7m.jarabica.lwjgl</artifactId>
 
@@ -24,10 +24,15 @@
       <artifactId>com.io7m.jarabica.api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>com.io7m.jarabica.extensions.efx</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
-      <groupId>com.io7m.jaffirm</groupId>
-      <artifactId>com.io7m.jaffirm.core</artifactId>
+      <groupId>com.io7m.jtensors</groupId>
+      <artifactId>com.io7m.jtensors.core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.io7m.jxtrand</groupId>
@@ -37,10 +42,18 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+    </dependency>
 
     <dependency>
-      <groupId>org.lwjgl.osgi</groupId>
-      <artifactId>org.lwjgl.openal</artifactId>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-openal</artifactId>
     </dependency>
 
     <dependency>

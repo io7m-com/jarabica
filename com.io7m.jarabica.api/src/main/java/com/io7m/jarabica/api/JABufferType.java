@@ -22,7 +22,8 @@ import java.nio.ByteBuffer;
  * The type of buffer objects.
  */
 
-public interface JABufferType extends JAHandleType
+public non-sealed interface JABufferType
+  extends JAHandleType, JASourceOrBufferType
 {
   /**
    * Set the buffer data. The provided byte buffer must be a direct byte

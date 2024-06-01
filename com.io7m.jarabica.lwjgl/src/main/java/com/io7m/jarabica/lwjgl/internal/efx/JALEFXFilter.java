@@ -1,0 +1,81 @@
+/*
+ * Copyright © 2022 Mark Raynsford <code@io7m.com> https://www.io7m.com
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+ * IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+
+package com.io7m.jarabica.lwjgl.internal.efx;
+
+import com.io7m.jarabica.api.JAException;
+import com.io7m.jarabica.lwjgl.internal.JALErrorChecker;
+import com.io7m.jarabica.lwjgl.internal.JALHandle;
+
+import java.util.Objects;
+
+import static org.lwjgl.openal.EXTEfx.alDeleteFilters;
+
+/**
+ * The base type of filters.
+ */
+
+public abstract class JALEFXFilter extends JALHandle
+{
+  private final JALExtensionEFXContext context;
+  private final int filter;
+  private final JALErrorChecker errorChecker;
+
+  protected JALEFXFilter(
+    final JALExtensionEFXContext inContext,
+    final String inType,
+    final Number inValue)
+  {
+    super(inType, inValue, inContext.context().strings());
+    this.filter = inValue.intValue();
+    this.context = Objects.requireNonNull(inContext, "context");
+    this.errorChecker = this.context.context().errorChecker();
+  }
+
+  /**
+   * @return The extension context
+   */
+
+  public final JALExtensionEFXContext context()
+  {
+    return this.context;
+  }
+
+  protected final JALErrorChecker errorChecker()
+  {
+    return this.errorChecker;
+  }
+
+  @Override
+  protected final void closeActual()
+    throws JAException
+  {
+    alDeleteFilters(this.filter);
+    this.context.context().errorChecker().checkErrors("alDeleteFilters");
+    this.onDeleted();
+  }
+
+  protected abstract void onDeleted();
+
+  protected final void check()
+    throws JAException
+  {
+    this.checkNotClosed();
+    final var c = this.context.context();
+    c.checkCurrent(this, c);
+  }
+}
