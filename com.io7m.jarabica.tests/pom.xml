@@ -48,27 +48,7 @@
     </dependency>
     <dependency>
       <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl</artifactId>
-      <classifier>natives-linux</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl</artifactId>
-      <classifier>natives-windows</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
       <artifactId>lwjgl-openal</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl-openal</artifactId>
-      <classifier>natives-linux</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.lwjgl</groupId>
-      <artifactId>lwjgl-openal</artifactId>
-      <classifier>natives-windows</classifier>
     </dependency>
 
     <dependency>
@@ -134,5 +114,49 @@
       </plugin>
     </plugins>
   </build>
+
+  <!-- Use platform-specific natives. -->
+  <profiles>
+    <profile>
+      <id>lwjgl-windows</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-windows</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>lwjgl-linux</id>
+      <activation>
+        <os>
+          <family>Linux</family>
+        </os>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.lwjgl</groupId>
+          <artifactId>lwjgl-openal</artifactId>
+          <classifier>natives-linux</classifier>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 
 </project>
