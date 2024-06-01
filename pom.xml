@@ -40,7 +40,7 @@
     <com.io7m.xstructural.version>1.8.1</com.io7m.xstructural.version>
 
     <!-- Third-party dependencies. -->
-    <javafx.version>21.0.3</javafx.version>
+    <javafx.version>23-ea+20</javafx.version>
     <jqwik.version>1.8.5</jqwik.version>
     <org.junit.version>5.10.2</org.junit.version>
     <lwjgl.version>3.3.3</lwjgl.version>
