@@ -23,9 +23,9 @@ module com.io7m.jarabica.extensions.efx
   requires static org.osgi.annotation.bundle;
   requires static org.osgi.annotation.versioning;
 
-  requires transitive com.io7m.jtensors.core;
-  requires transitive com.io7m.jarabica.api;
-  requires transitive org.jgrapht.core;
+  requires com.io7m.jtensors.core;
+  requires com.io7m.jarabica.api;
+  requires org.jgrapht.core;
 
   exports com.io7m.jarabica.extensions.efx;
 }

@@ -28,15 +28,17 @@ module com.io7m.jarabica.lwjgl
   requires static org.osgi.annotation.bundle;
   requires static org.osgi.annotation.versioning;
 
+  requires com.io7m.jarabica.api;
+  requires com.io7m.jarabica.extensions.efx;
+
+  requires com.io7m.jtensors.core;
   requires com.io7m.jxtrand.vanilla;
   requires org.jgrapht.core;
   requires org.lwjgl.openal;
   requires org.slf4j;
 
-  requires transitive com.io7m.jarabica.api;
-  requires transitive com.io7m.jarabica.extensions.efx;
-
-  opens com.io7m.jarabica.lwjgl.internal to com.io7m.jxtrand.vanilla;
+  opens com.io7m.jarabica.lwjgl.internal
+    to com.io7m.jxtrand.vanilla;
 
   uses JALExtensionFactoryType;
 

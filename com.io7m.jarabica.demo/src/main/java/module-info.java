@@ -26,12 +26,15 @@ open module com.io7m.jarabica.demo
   requires com.io7m.jarabica.api;
   requires com.io7m.jarabica.extensions.efx;
   requires com.io7m.jarabica.lwjgl;
+
   requires com.io7m.jwheatsheaf.api;
   requires com.io7m.jwheatsheaf.ui;
+  requires com.io7m.jtensors.core;
 
   requires java.desktop;
   requires javafx.controls;
   requires javafx.fxml;
+  requires org.jgrapht.core;
   requires org.slf4j;
 
   exports com.io7m.jarabica.demo;

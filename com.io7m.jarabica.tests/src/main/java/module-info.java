@@ -19,11 +19,14 @@ open module com.io7m.jarabica.tests
 {
   requires com.io7m.jarabica.api;
   requires com.io7m.jarabica.extensions.efx;
-
   requires com.io7m.jarabica.lwjgl;
+
   requires com.io7m.jmulticlose.core;
+  requires com.io7m.jtensors.core;
   requires net.jqwik.api;
   requires org.apache.commons.text;
+  requires org.jgrapht.core;
+  requires org.lwjgl.openal;
   requires org.slf4j;
 
   requires org.junit.jupiter.api;
