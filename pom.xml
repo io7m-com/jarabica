@@ -37,7 +37,7 @@
     <com.io7m.jbssio.version>1.1.0</com.io7m.jbssio.version>
     <com.io7m.jwheatsheaf.version>3.0.0</com.io7m.jwheatsheaf.version>
     <com.io7m.jxtrand.version>2.1.0</com.io7m.jxtrand.version>
-    <com.io7m.xstructural.version>1.8.1</com.io7m.xstructural.version>
+    <com.io7m.xstructural.version>1.9.0</com.io7m.xstructural.version>
 
     <!-- Third-party dependencies. -->
     <javafx.version>23-ea+20</javafx.version>
