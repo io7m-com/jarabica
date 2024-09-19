@@ -824,7 +824,6 @@ public final class MainController implements Initializable
   {
     final var chooser =
       this.choosers.create(
-        this.listenerPane.getScene().getWindow(),
         JWFileChooserConfiguration.builder()
           .setAction(JWFileChooserAction.OPEN_EXISTING_SINGLE)
           .build()
