@@ -42,7 +42,7 @@
     <!-- Third-party dependencies. -->
     <javafx.version>23-ea+20</javafx.version>
     <jqwik.version>1.9.1</jqwik.version>
-    <org.junit.version>5.11.1</org.junit.version>
+    <org.junit.version>5.11.2</org.junit.version>
     <lwjgl.version>3.3.4</lwjgl.version>
     <org.lwjgl.version>3.3.0</org.lwjgl.version>
   </properties>
