@@ -234,6 +234,9 @@ public interface JAListenerType
     /**
      * An orientation expressed as a pair of linearly independent "forward" and
      * "up" vectors.
+     *
+     * @param forward The vector pointing towards a point on a plane
+     * @param up      The vector pointing upwards
      */
 
     public Orientation

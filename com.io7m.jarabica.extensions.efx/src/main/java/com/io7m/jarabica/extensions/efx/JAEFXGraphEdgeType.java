@@ -50,6 +50,9 @@ public sealed interface JAEFXGraphEdgeType
   {
     /**
      * A source node connected directly to a filter.
+     *
+     * @param filter The filter
+     * @param source The source
      */
 
     public JAEFXSourceDirectToFilter
@@ -79,6 +82,9 @@ public sealed interface JAEFXGraphEdgeType
   {
     /**
      * A source node connected directly to an effects slot.
+     *
+     * @param slot   The slot
+     * @param source The source
      */
 
     public JAEFXSourceDirectToEffectsSlot
@@ -108,6 +114,9 @@ public sealed interface JAEFXGraphEdgeType
   {
     /**
      * An effect connected to an effects slot.
+     *
+     * @param effect The effect
+     * @param slot   The slot
      */
 
     public JAEFXEffectOnSlot
